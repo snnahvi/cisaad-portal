@@ -1,0 +1,169 @@
+<title>CISAAD Resource Portal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: filter panel on top, resource cards in an auto-fill grid; built to sit inside a UMBC WordPress iframe */
+:root{
+  --bg:#ffffff; --surface:#f6f5f2; --line:#e3e0d8; --fg:#1b1a17; --muted:#5f5b52;
+  --gold:#fdb515; --gold-ink:#7a5600; --ink:#000000;
+  --edu:#2f6f4f; --res:#2c5a8c; --pol:#8a3b2e;
+  --f-display:"Archivo",system-ui,sans-serif; --f-body:"Source Sans 3",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141412; --surface:#1e1d1a; --line:#34322d; --fg:#f1efe9; --muted:#aaa59a;
+  --gold-ink:#fdb515; --ink:#fdb515; --edu:#7cc39c; --res:#8db8e8; --pol:#e59a8b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141412; --surface:#1e1d1a; --line:#34322d; --fg:#f1efe9; --muted:#aaa59a;
+  --gold-ink:#fdb515; --ink:#fdb515; --edu:#7cc39c; --res:#8db8e8; --pol:#e59a8b; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--f-body);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px;border-bottom:3px solid var(--gold);padding-bottom:14px;margin-bottom:20px}
+h1{font:800 clamp(24px,4vw,32px)/1.1 var(--f-display);margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0;font-size:15px}
+.sample{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:var(--gold);color:#000;padding:4px 8px;border-radius:3px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:grid;gap:14px}
+#q{width:100%;font:inherit;padding:11px 14px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--fg)}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+label{display:grid;gap:4px;font:600 12px var(--f-display);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+select{font:15px var(--f-body);padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--fg)}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin:22px 0 12px}
+.bar h2{font:700 20px var(--f-display);margin:0}
+#count{font:500 13px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+#reset{font:600 14px var(--f-body);background:none;border:1px solid var(--line);color:var(--fg);padding:6px 12px;border-radius:4px;cursor:pointer}
+#reset:hover{border-color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{border:1px solid var(--line);border-top:4px solid var(--c);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--bg);min-width:0}
+.card[data-s="Education"]{--c:var(--edu)} .card[data-s="Research"]{--c:var(--res)} .card[data-s="Policy & Law"]{--c:var(--pol)}
+.sec{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+.card h3{font:700 17px/1.3 var(--f-display);margin:0;text-wrap:balance}
+.card h3 a{color:var(--fg);text-decoration:none}
+.card h3 a:hover{text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:2px}
+.card p{margin:0;color:var(--muted);font-size:15px}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:14px}
+dt{color:var(--muted)} dd{margin:0}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.tag{font:500 12px var(--f-mono);border:1px solid var(--line);border-radius:3px;padding:2px 7px;color:var(--muted);background:var(--surface);cursor:pointer}
+.tag:hover{border-color:var(--gold)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px 0}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>CISAAD Resource Portal</h1>
+      <p class="sub">Datasets, tools, courses and laws on audio deepfake analysis</p>
+    </div>
+    <span class="sample">Sample data</span>
+  </header>
+
+  <div class="panel">
+    <input id="q" type="search" placeholder="Search by title, description, author or tag…" aria-label="Search resources">
+    <div class="filters">
+      <label>Section<select id="f-section"><option value="">All sections</option></select></label>
+      <label>Type<select id="f-type"><option value="">All types</option></select></label>
+      <label>Level<select id="f-level"><option value="">All levels</option></select></label>
+      <label>Year<select id="f-year"><option value="">All years</option></select></label>
+    </div>
+  </div>
+
+  <div class="bar">
+    <h2>Resources</h2>
+    <div style="display:flex;gap:12px;align-items:center"><span id="count"></span><button id="reset" type="button">Clear filters</button></div>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- DATA: one row per card. To use a Google Sheet instead, set SHEET_CSV_URL below
+     (File → Share → Publish to web → CSV) and the portal reads it on load. -->
+<script id="data" type="text/csv">
+section,type,title,description,author,level,year,tags,link
+Research,Dataset,ASVspoof 2019 LA,Logical-access dataset of bona fide and spoofed speech made with TTS and voice conversion systems. A standard benchmark for spoof detection.,ASVspoof Consortium,Intermediate,2019,dataset;benchmark;tts,https://www.asvspoof.org/
+Research,Dataset,ASVspoof 2021 DF,Deepfake track with compressed audio from many codecs to test detectors under real-world conditions.,ASVspoof Consortium,Advanced,2021,dataset;codecs;robustness,https://www.asvspoof.org/
+Research,Dataset,WaveFake,Generated audio from several neural vocoders for studying vocoder artifacts in fake speech.,Frank & Schönherr,Intermediate,2021,dataset;vocoder,https://github.com/RUB-SysSec/WaveFake
+Research,Dataset,In-the-Wild Audio Deepfakes,Real and fake recordings of public figures collected online to test how detectors generalize outside the lab.,Müller et al.,Advanced,2022,dataset;generalization,#
+Research,Tool,AASIST,Graph-attention model that works on raw waveforms. A common baseline for anti-spoofing research.,Jung et al.,Advanced,2022,model;pytorch;baseline,https://github.com/clovaai/aasist
+Research,Tool,RawNet2 Baseline,End-to-end raw-waveform detector used as an official ASVspoof baseline.,Tak et al.,Intermediate,2021,model;baseline,#
+Research,Paper,Does Audio Deepfake Detection Generalize?,Shows that detectors trained on lab datasets lose much of their accuracy on real-world fakes.,Müller et al.,Advanced,2022,paper;generalization,#
+Education,Course Module,What Is an Audio Deepfake?,Short introduction for non-specialists: how voice cloning works and where it shows up.,CISAAD Team,Beginner,2025,intro;awareness,#
+Education,Workshop,Hands-on: Training a Spoof Detector,Notebook workshop: load ASVspoof data, extract features and train a simple classifier in Python.,CISAAD Team,Intermediate,2025,python;jupyter;features,#
+Education,Lecture,Spectrograms and Speech Features,Explains MFCC and LFCC features and why they help separate real from synthetic speech.,CISAAD Team,Beginner,2025,signal-processing;features,#
+Education,Workshop,Evaluating Detectors with EER,How to compute equal error rate and t-DCF and read the results correctly.,CISAAD Team,Intermediate,2026,evaluation;metrics,#
+Policy & Law,State Law,Tennessee ELVIS Act,Protects a person's voice and likeness from unauthorized AI imitation.,State of Tennessee,Beginner,2024,voice-rights;state-law,#
+Policy & Law,Federal Rule,FCC Ruling on AI Voices in Robocalls,Treats AI-generated voices as artificial voices under the TCPA so robocalls using them need consent.,FCC,Beginner,2024,robocalls;federal,#
+Policy & Law,International,EU AI Act Transparency Rules,Requires that deepfake audio and video be labeled as artificially generated.,European Union,Beginner,2024,eu;labeling,#
+Policy & Law,Proposed Bill,NO FAKES Act,Proposed federal right to control digital replicas of a person's voice and likeness.,U.S. Congress,Beginner,2024,voice-rights;federal;proposed,#
+</script>
+
+<script>
+(function(){
+  var SHEET_CSV_URL = ""; // e.g. https://docs.google.com/spreadsheets/d/e/.../pub?output=csv
+
+  function parseCSV(text){
+    var rows=[],row=[],f="",q=false,i,c;
+    for(i=0;i<text.length;i++){c=text[i];
+      if(q){ if(c=='"'){ if(text[i+1]=='"'){f+='"';i++;} else q=false; } else f+=c; }
+      else if(c=='"') q=true;
+      else if(c==','){row.push(f);f="";}
+      else if(c=='\n'||c=='\r'){ if(c=='\r'&&text[i+1]=='\n')i++; row.push(f);f=""; if(row.join("").trim())rows.push(row); row=[]; }
+      else f+=c;
+    }
+    row.push(f); if(row.join("").trim())rows.push(row);
+    var head=rows.shift().map(function(h){return h.trim().toLowerCase();});
+    return rows.map(function(r){var o={};head.forEach(function(h,j){o[h]=(r[j]||"").trim();});
+      o.tags=o.tags?o.tags.split(";").map(function(t){return t.trim();}).filter(Boolean):[]; return o;});
+  }
+
+  var data=[], $=function(id){return document.getElementById(id);};
+  var filters={section:"f-section",type:"f-type",level:"f-level",year:"f-year"};
+  var levelOrder=["Beginner","Intermediate","Advanced"];
+
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+
+  function fill(){
+    Object.keys(filters).forEach(function(k){
+      var sel=$(filters[k]), vals=[];
+      data.forEach(function(d){if(d[k]&&vals.indexOf(d[k])<0)vals.push(d[k]);});
+      vals.sort(function(a,b){ if(k=="level")return levelOrder.indexOf(a)-levelOrder.indexOf(b); if(k=="year")return b-a; return a.localeCompare(b);});
+      vals.forEach(function(v){var o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o);});
+    });
+  }
+
+  function render(){
+    var q=$("q").value.trim().toLowerCase();
+    var list=data.filter(function(d){
+      var hay=(d.title+" "+d.description+" "+d.author+" "+d.tags.join(" ")).toLowerCase();
+      if(q&&hay.indexOf(q)<0)return false;
+      return Object.keys(filters).every(function(k){var v=$(filters[k]).value;return !v||d[k]==v;});
+    });
+    $("count").textContent=list.length+" of "+data.length+" resources";
+    $("grid").innerHTML=list.length?list.map(function(d){
+      var link=d.link&&d.link!="#"?d.link:null;
+      return '<article class="card" data-s="'+esc(d.section)+'">'+
+        '<span class="sec">'+esc(d.section)+' · '+esc(d.type)+'</span>'+
+        '<h3>'+(link?'<a href="'+esc(link)+'" target="_blank" rel="noopener">'+esc(d.title)+'</a>':esc(d.title))+'</h3>'+
+        '<p>'+esc(d.description)+'</p>'+
+        '<dl><dt>Author</dt><dd>'+esc(d.author)+'</dd><dt>Level</dt><dd>'+esc(d.level)+'</dd><dt>Year</dt><dd>'+esc(d.year)+'</dd></dl>'+
+        '<div class="tags">'+d.tags.map(function(t){return '<button type="button" class="tag" data-tag="'+esc(t)+'">'+esc(t)+'</button>';}).join("")+'</div>'+
+      '</article>';
+    }).join(""):'<p class="empty">No resources match these filters. Try a different search or clear the filters.</p>';
+  }
+
+  function start(text){
+    data=parseCSV(text); fill(); render();
+    ["q"].concat(Object.keys(filters).map(function(k){return filters[k];})).forEach(function(id){
+      $(id).addEventListener("input",render); $(id).addEventListener("change",render);
+    });
+    $("reset").addEventListener("click",function(){ $("q").value=""; Object.keys(filters).forEach(function(k){$(filters[k]).value="";}); render(); });
+    $("grid").addEventListener("click",function(e){var t=e.target.closest(".tag"); if(t){$("q").value=t.dataset.tag; render();}});
+  }
+
+  var inline=$("data").textContent.trim();
+  if(SHEET_CSV_URL){
+    fetch(SHEET_CSV_URL).then(function(r){return r.text();}).then(start).catch(function(){start(inline);});
+  } else start(inline);
+})();
+</script>
