@@ -78,30 +78,13 @@ dt{color:var(--muted)} dd{margin:0}
   <div class="grid" id="grid"></div>
 </div>
 
-<!-- DATA: one row per card. To use a Google Sheet instead, set SHEET_CSV_URL below
-     (File → Share → Publish to web → CSV) and the portal reads it on load. -->
-<script id="data" type="text/csv">
-section,type,title,description,author,level,year,tags,link
-Research,Dataset,ASVspoof 2019 LA,Logical-access dataset of bona fide and spoofed speech made with TTS and voice conversion systems. A standard benchmark for spoof detection.,ASVspoof Consortium,Intermediate,2019,dataset;benchmark;tts,https://www.asvspoof.org/
-Research,Dataset,ASVspoof 2021 DF,Deepfake track with compressed audio from many codecs to test detectors under real-world conditions.,ASVspoof Consortium,Advanced,2021,dataset;codecs;robustness,https://www.asvspoof.org/
-Research,Dataset,WaveFake,Generated audio from several neural vocoders for studying vocoder artifacts in fake speech.,Frank & Schönherr,Intermediate,2021,dataset;vocoder,https://github.com/RUB-SysSec/WaveFake
-Research,Dataset,In-the-Wild Audio Deepfakes,Real and fake recordings of public figures collected online to test how detectors generalize outside the lab.,Müller et al.,Advanced,2022,dataset;generalization,#
-Research,Tool,AASIST,Graph-attention model that works on raw waveforms. A common baseline for anti-spoofing research.,Jung et al.,Advanced,2022,model;pytorch;baseline,https://github.com/clovaai/aasist
-Research,Tool,RawNet2 Baseline,End-to-end raw-waveform detector used as an official ASVspoof baseline.,Tak et al.,Intermediate,2021,model;baseline,#
-Research,Paper,Does Audio Deepfake Detection Generalize?,Shows that detectors trained on lab datasets lose much of their accuracy on real-world fakes.,Müller et al.,Advanced,2022,paper;generalization,#
-Education,Course Module,What Is an Audio Deepfake?,Short introduction for non-specialists: how voice cloning works and where it shows up.,CISAAD Team,Beginner,2025,intro;awareness,#
-Education,Workshop,Hands-on: Training a Spoof Detector,"Notebook workshop: load ASVspoof data, extract features and train a simple classifier in Python.",CISAAD Team,Intermediate,2025,python;jupyter;features,#
-Education,Lecture,Spectrograms and Speech Features,Explains MFCC and LFCC features and why they help separate real from synthetic speech.,CISAAD Team,Beginner,2025,signal-processing;features,#
-Education,Workshop,Evaluating Detectors with EER,How to compute equal error rate and t-DCF and read the results correctly.,CISAAD Team,Intermediate,2026,evaluation;metrics,#
-Policy & Law,State Law,Tennessee ELVIS Act,Protects a person's voice and likeness from unauthorized AI imitation.,State of Tennessee,Beginner,2024,voice-rights;state-law,#
-Policy & Law,Federal Rule,FCC Ruling on AI Voices in Robocalls,Treats AI-generated voices as artificial voices under the TCPA so robocalls using them need consent.,FCC,Beginner,2024,robocalls;federal,#
-Policy & Law,International,EU AI Act Transparency Rules,Requires that deepfake audio and video be labeled as artificially generated.,European Union,Beginner,2024,eu;labeling,#
-Policy & Law,Proposed Bill,NO FAKES Act,Proposed federal right to control digital replicas of a person's voice and likeness.,U.S. Congress,Beginner,2024,voice-rights;federal;proposed,#
-</script>
+<!-- The cards come from resources.csv (same folder). Edit that file to add or change resources. -->
 
 <script>
 (function(){
-  var SHEET_CSV_URL = ""; // e.g. https://docs.google.com/spreadsheets/d/e/.../pub?output=csv
+  // Where the card data lives. Leave as "resources.csv" to use the file in this folder,
+  // or paste a Google Sheet link (File > Share > Publish to web > CSV).
+  var DATA_URL = "resources.csv";
 
   function parseCSV(text){
     var rows=[],row=[],f="",q=false,i,c;
@@ -162,10 +145,14 @@ Policy & Law,Proposed Bill,NO FAKES Act,Proposed federal right to control digita
     $("grid").addEventListener("click",function(e){var t=e.target.closest(".tag"); if(t){$("q").value=t.dataset.tag; render();}});
   }
 
-  var inline=$("data").textContent.trim();
-  if(SHEET_CSV_URL){
-    fetch(SHEET_CSV_URL).then(function(r){return r.text();}).then(start).catch(function(){start(inline);});
-  } else start(inline);
+  $("count").textContent="Loading resources…";
+  fetch(DATA_URL,{cache:"no-cache"})
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function(t){ start(t.replace(/^\uFEFF/,"")); })
+    .catch(function(){
+      $("count").textContent="";
+      $("grid").innerHTML='<p class="empty">The resource list could not be loaded. Check that resources.csv is in the same folder as this page.</p>';
+    });
 })();
 </script>
 
