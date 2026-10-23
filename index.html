@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>CISAAD Resource Portal</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -84,7 +83,7 @@ dt{color:var(--muted)} dd{margin:0}
 (function(){
   // Where the card data lives. Leave as "resources.csv" to use the file in this folder,
   // or paste a Google Sheet link (File > Share > Publish to web > CSV).
-  var DATA_URL = "resources.csv";
+  var DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRVlPIzFxc8nM5c6x-zFOeH3LvSOEdD7YXi0weUmhRrkms0Hfsrd8FLfQR1tN-1jEsJN8kOjICkAjCO/pub?gid=160671911&single=true&output=csv";
 
   function parseCSV(text){
     var rows=[],row=[],f="",q=false,i,c;
@@ -137,7 +136,12 @@ dt{color:var(--muted)} dd{margin:0}
   }
 
   function start(text){
-    data=parseCSV(text); fill(); render();
+    // If the data has a "show" column, only rows marked yes appear on the site.
+    data=parseCSV(text).filter(function(d){
+      if(!("show" in d)) return true;
+      return /^(yes|y|true|x|1)$/i.test(d.show);
+    });
+    fill(); render();
     ["q"].concat(Object.keys(filters).map(function(k){return filters[k];})).forEach(function(id){
       $(id).addEventListener("input",render); $(id).addEventListener("change",render);
     });
@@ -155,5 +159,3 @@ dt{color:var(--muted)} dd{margin:0}
     });
 })();
 </script>
-
-</body></html>
