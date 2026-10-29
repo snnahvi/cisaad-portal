@@ -1,0 +1,41 @@
+# Copies the live Publications Google Sheet (CSV) into pages/publications/publications.csv
+# every hour, so publications.html can show the list instantly.
+# You can also run it by hand: GitHub -> Actions -> "Update publications data" -> Run workflow.
+name: Update publications data
+
+on:
+  schedule:
+    - cron: "17 * * * *"   # every hour, at minute 17 (UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    # only run in the repo that hosts the page on GitHub Pages
+    if: github.repository == 'snnahvi/cisaad-portal'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the sheet
+        env:
+          SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRso0GBCO-nlqSDNI56TACyZL2AKfRhADiAGdiAb7vWJ-eQsTswktN7kzXDPfDqoBkUODPf2jjn84_K/pub?gid=1070292077&single=true&output=csv"
+        run: |
+          curl -sSL --fail "$SHEET_CSV_URL" -o /tmp/publications.csv
+          # safety check: only replace the snapshot if the download looks like the sheet
+          head -c 7 /tmp/publications.csv | grep -q "Papers" || { echo "Download does not look like the sheet"; exit 1; }
+          cp /tmp/publications.csv pages/publications/publications.csv
+
+      - name: Save if changed
+        run: |
+          if git diff --quiet -- pages/publications/publications.csv; then
+            echo "No changes in the sheet."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add pages/publications/publications.csv
+            git commit -m "Update publications data from Google Sheet"
+            git push
+          fi
