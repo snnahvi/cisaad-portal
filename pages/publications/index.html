@@ -8,8 +8,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
-  /* Matched to cisaad.umbc.edu (Inter, teal links, gray rules) */
-  :root{--text:#000;--muted:#636466;--rule:#636466;--link:#007176;--bg:#fff}
+  /* UMBC brand (styleguide.umbc.edu): Inter; primary Black + Gold;
+     secondary AOK Teal (links), Dark Gray (muted text), Light Gray (lines) as accents only.
+     Gold is never used as text on white, and white text is never put on gold. */
+  :root{--text:#000;--muted:#636466;--rule:#636466;--link:#007176;--bg:#fff;
+        --gold:#fdb515;--gold-tint:#fee9b3;--line:#c7c8ca;--soft:#f4f4f5}
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--bg)}
   body{color:var(--text);font:16px/1.6 "Inter var","Inter","Helvetica Neue",Helvetica,Arial,sans-serif}
@@ -20,20 +23,34 @@
   /* filter bar: section buttons + year + search */
   .filters{margin:12px 0 4px}
   .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-  .chip{font:inherit;font-size:14px;line-height:1.2;padding:7px 14px;border:1px solid var(--link);border-radius:999px;background:#fff;color:var(--link);cursor:pointer;transition:background .15s,color .15s}
-  .chip:hover{background:#e6f1f1}
-  .chip[aria-pressed="true"]{background:var(--link);color:#fff}
-  .chip .n{font-size:12px;opacity:.75;margin-left:4px}
+  .chip{font:inherit;font-size:14px;font-weight:600;line-height:1.2;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--text);cursor:pointer;transition:background .15s,border-color .15s}
+  .chip:hover{border-color:var(--gold);background:#fff8e6}
+  .chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#000}
+  .chip .n{font-size:12px;font-weight:400;color:var(--muted);margin-left:4px}
+  .chip[aria-pressed="true"] .n{color:#000}
   .tools{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 8px}
-  .tools select,.tools input{font:inherit;font-size:14px;padding:7px 10px;border:1px solid #c4c4c6;border-radius:6px;background:#fff;color:var(--text)}
+  .tools select,.tools input{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--text)}
   .tools input{width:260px;max-width:100%}
   .tools select:focus,.tools input:focus,.chip:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+  mark{background:var(--gold-tint);color:#000;padding:0 1px;border-radius:2px;box-shadow:inset 0 -2px 0 var(--gold)}
   .count{text-align:center;color:var(--muted);font-size:14px;margin:4px 0 8px}
-  h3{font-size:21.6px;line-height:1.3;font-weight:600;margin:16px 0;scroll-margin-top:8px}
-  ol{margin:16px 0 16px 4px;padding-left:40px}
-  li{margin:0;overflow-wrap:anywhere}
+  h3{font-size:21.6px;line-height:1.3;font-weight:700;margin:28px 0 14px;scroll-margin-top:8px;padding-bottom:6px;border-bottom:3px solid var(--gold);display:inline-block}
+  /* publication cards */
+  .cards{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:12px}
+  .card{border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:8px;padding:14px 16px;background:#fff;transition:box-shadow .15s}
+  .card:hover{box-shadow:0 2px 10px rgba(0,0,0,.08)}
+  .card-top{display:flex;gap:12px;align-items:flex-start}
+  .year{flex:none;font-size:13px;font-weight:700;color:var(--gold);background:#000;border-radius:999px;padding:2px 10px;margin-top:2px}
+  .pub-text{flex:1;min-width:0;overflow-wrap:anywhere;font-size:15px;line-height:1.55}
+  .pub-title{font-size:17px;font-weight:600;line-height:1.4;color:var(--text);margin:0 0 4px}
+  .pub-meta{font-size:14px;color:var(--muted);line-height:1.5}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .btn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:13px;font-weight:600;line-height:1;padding:7px 12px;border-radius:6px;border:1px solid var(--link);color:var(--link);background:#fff;text-decoration:none;cursor:pointer}
+  .btn:hover{background:var(--link);color:#fff;text-decoration:none}
+  .btn svg{width:14px;height:14px;flex:none}
+  h3 .n{font-size:15px;font-weight:400;color:var(--muted);margin-left:6px}
   .status{color:var(--muted);padding:16px 0}
-  .video{position:relative;width:100%;max-width:560px;aspect-ratio:16/9;margin:8px 0 12px;background:#f2f2f2}
+  .video{position:relative;width:100%;max-width:560px;aspect-ratio:16/9;margin:12px 0 0;background:#f2f2f2}
   .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 </style>
 </head>
@@ -98,23 +115,72 @@ let ALL=[];
 // current filter choices
 const F={section:"all",year:"all",q:""};
 
-function refHTML(p){
-  // turn URLs written inside the reference into links
-  let h = esc(p.ref).replace(/https?:\/\/[^\s<]+/g, u=>{
+const ICON={
+  paper:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>',
+  pdf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-5-5m5 5l5-5"/><path d="M4 19h16"/></svg>',
+  slides:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4m-4 0h8"/></svg>',
+  link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
+};
+// picks a button label from the address
+function kind(u, main){
+  if(/\.pdf(\?|#|$)/i.test(u)) return ["pdf","PDF"];
+  if(/docs\.google\.com\/presentation/i.test(u)) return ["slides","Slides"];
+  if(ytId(u)) return ["play","Video"];
+  return main ? ["paper","View paper"] : ["link","More"];
+}
+const btn=(u,[ic,label])=>`<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">${ICON[ic]}${label}</a>`;
+
+// takes the title out of the reference, so it is not shown twice
+function withoutTitle(ref,title){
+  if(!title) return ref;
+  const i=ref.toLowerCase().indexOf(title.toLowerCase());
+  if(i<0) return ref;
+  let a=ref.slice(0,i), b=ref.slice(i+title.length);
+  a=a.replace(/[\s"“”']+$/,"");
+  b=b.replace(/^[\s"“”'.,]+/,"").replace(/^[\s"“”'.,]+/,"");
+  return (a+(b?" "+b:"")).trim();
+}
+const linkify = s => esc(s).replace(/https?:\/\/[^\s<]+/g, u=>{
     const clean=u.replace(/[.,;)]+$/,""); const tail=u.slice(clean.length);
     return `<a href="${clean}" target="_blank" rel="noopener">${clean}</a>${tail}`;
   });
-  [p.link,...p.extra].filter(u=>u && !p.ref.includes(u)).forEach(u=>{
-    h += ` <a href="${esc(u)}" target="_blank" rel="noopener">[${u===p.link?"Link":"More"}]</a>`;
+
+function cardHTML(p){
+  // with a Title: bold title + the rest of the reference in gray; without: the reference as before
+  let extra=p.extra, text;
+  if(p.title){
+    // long web addresses in the gray line become buttons instead
+    let meta=withoutTitle(p.ref,p.title);
+    const inMeta=(meta.match(/https?:\/\/[^\s,]+/g)||[]).map(u=>u.replace(/[.,;)]+$/,""));
+    meta=meta.replace(/,?\s*https?:\/\/[^\s,]+/g,"").replace(/[\s,]+$/,"");
+    extra=[...extra,...inMeta];
+    text=`<div class="pub-title">${esc(p.title)}</div><div class="pub-meta">${esc(meta)}</div>`;
+  } else text=linkify(p.ref);
+  const seen=new Set(); const btns=[];
+  [[p.link,true],...extra.map(u=>[u,false])].forEach(([u,main])=>{
+    if(!u||seen.has(u)) return; seen.add(u); btns.push(btn(u,kind(u,main)));
   });
-  // "Video" column: YouTube links play on the page; other video links show as [Video]
   p.video.forEach(u=>{
-    h += ytId(u)
-      ? `<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${ytId(u)}" title="Video" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`
-      : ` <a href="${esc(u)}" target="_blank" rel="noopener">[Video]</a>`;
+    btns.push(ytId(u)
+      ? `<button type="button" class="btn" data-yt="${ytId(u)}">${ICON.play}Watch video</button>`
+      : btn(u,["play","Video"]));
   });
-  return h;
+  return `<li class="card"><div class="card-top">`
+    + (p.year?`<span class="year">${esc(p.year)}</span>`:"")
+    + `<div class="pub-text">${text}</div></div>`
+    + (btns.length?`<div class="actions">${btns.join("")}</div>`:"")
+    + `</li>`;
 }
+
+// "Watch video" opens the player inside the card
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-yt]"); if(!b) return;
+  const card=b.closest(".card"); const open=card.querySelector(".video");
+  if(open){ open.remove(); b.lastChild.textContent="Watch video"; return; }
+  card.insertAdjacentHTML("beforeend",`<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${b.dataset.yt}?autoplay=1" title="Video" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`);
+  b.lastChild.textContent="Hide video";
+});
 
 function groupAll(){
   const groups=SECTIONS.map(([key,title,id])=>({title,id,items:ALL.filter(p=>norm(p.type)===norm(key))}));
@@ -131,7 +197,7 @@ function groupAll(){
 function passes(p){
   if(F.year!=="all" && p.year!==F.year) return false;
   if(F.q){
-    const hay=(p.ref+" "+p.type+" "+p.year).toLowerCase();
+    const hay=(p.title+" "+p.ref+" "+p.type+" "+p.year).toLowerCase();
     if(!F.q.toLowerCase().split(/\s+/).every(w=>hay.includes(w))) return false;
   }
   return true;
@@ -166,8 +232,32 @@ function drawList(groups){
   const filtered=F.section!=="all"||F.year!=="all"||F.q;
   document.getElementById('count').textContent = filtered ? `Showing ${n} of ${ALL.length}` : "";
   list.innerHTML = vis.length ? vis.map(g=>
-    `<h3 id="${g.id}">${esc(g.title)}</h3><ol>`+g.items.map(p=>`<li>${refHTML(p)}</li>`).join("")+`</ol>`).join("")
+    `<h3 id="${g.id}">${esc(g.title)}<span class="n">(${g.items.length})</span></h3><ul class="cards">`+g.items.map(cardHTML).join("")+`</ul>`).join("")
     : `<p class="status">${ALL.length?"No publications match these filters.":"No publications to show."}</p>`;
+  if(F.q) highlight(list, F.q);
+}
+
+// wraps the searched words in <mark> (only in visible text, never inside link addresses)
+function highlight(root, q){
+  const words=[...new Set(q.toLowerCase().split(/\s+/).filter(Boolean))]
+    .sort((a,b)=>b.length-a.length).map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
+  if(!words.length) return;
+  const re=new RegExp("("+words.join("|")+")","gi");
+  const has=new RegExp(words.join("|"),"i");
+  const walker=document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode:n=>n.parentNode.closest(".pub-text") && has.test(n.nodeValue)
+      ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+  });
+  const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(n=>{
+    const frag=document.createDocumentFragment();
+    n.nodeValue.split(re).forEach((part,i)=>{
+      if(!part) return;
+      if(i%2){ const m=document.createElement("mark"); m.textContent=part; frag.appendChild(m); }
+      else frag.appendChild(document.createTextNode(part));
+    });
+    n.parentNode.replaceChild(frag,n);
+  });
 }
 
 function render(){
@@ -182,6 +272,7 @@ function toItems(rows){
   return rows.filter(r=>isShown(r["Show"]) && (r["Papers"]||"").trim())
     .map(r=>({
       ref:r["Papers"].replace(/\s*\n\s*/g," "),
+      title:(r["Title"]||"").replace(/\s*\n\s*/g," ").trim(),
       link:urlsIn(r["Links"])[0]||"",
       type:(r["Paper Type"]||"").trim(),
       year:String(parseInt(r["Year"])||"").trim(),
