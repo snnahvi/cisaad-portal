@@ -17,7 +17,18 @@
   a{color:var(--link);text-decoration:underline}
   a:hover{text-decoration:none}
   hr{border:0;border-top:1px solid var(--rule);margin:8px 0}
-  .nav{text-align:center;margin:16px 0}
+  /* filter bar: section buttons + year + search */
+  .filters{margin:12px 0 4px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .chip{font:inherit;font-size:14px;line-height:1.2;padding:7px 14px;border:1px solid var(--link);border-radius:999px;background:#fff;color:var(--link);cursor:pointer;transition:background .15s,color .15s}
+  .chip:hover{background:#e6f1f1}
+  .chip[aria-pressed="true"]{background:var(--link);color:#fff}
+  .chip .n{font-size:12px;opacity:.75;margin-left:4px}
+  .tools{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 8px}
+  .tools select,.tools input{font:inherit;font-size:14px;padding:7px 10px;border:1px solid #c4c4c6;border-radius:6px;background:#fff;color:var(--text)}
+  .tools input{width:260px;max-width:100%}
+  .tools select:focus,.tools input:focus,.chip:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+  .count{text-align:center;color:var(--muted);font-size:14px;margin:4px 0 8px}
   h3{font-size:21.6px;line-height:1.3;font-weight:600;margin:16px 0;scroll-margin-top:8px}
   ol{margin:16px 0 16px 4px;padding-left:40px}
   li{margin:0;overflow-wrap:anywhere}
@@ -29,6 +40,7 @@
 <body>
 <div class="wrap">
   <div id="nav"></div>
+  <p class="count" id="count" aria-live="polite"></p>
   <div id="list"><p class="status">Loading publications…</p></div>
 </div>
 
@@ -65,13 +77,14 @@ const isShown = v => /^(true|yes|y|1|x|✓|show)$/i.test(String(v||"").trim());
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const urlsIn = s => (String(s||"").match(/https?:\/\/[^\s,]+/g)||[]);
 
+// Order of the sections on the page (conferences first)
 const SECTIONS = [
-  ["Journal Paper","Journal Papers","journal-papers"],
   ["Conference Paper","Conference Papers","conf-papers"],
-  ["Conference Presentation","Conference Presentations","conf-ppt"],
-  ["Pre-print","Pre-Print","pre-print"],
   ["Conference Poster","Conference Posters","conf-posters"],
-  ["Op Ed","Op Ed","op-ed"],
+  ["Conference Presentation","Conference Presentations","conf-ppt"],
+  ["Journal Paper","Journal Papers","journal-papers"],
+  ["Pre-print","Pre-Prints","pre-print"],
+  ["Op Ed","Op Eds","op-ed"],
   ["Gallery Exhibit","Gallery Exhibits","gallery-ex"],
   ["Talk","Talks","talks"]
 ];
@@ -82,6 +95,8 @@ function ytId(u){
 }
 const norm = s => String(s||"").toLowerCase().replace(/[^a-z]/g,"").replace(/s$/,"");
 let ALL=[];
+// current filter choices
+const F={section:"all",year:"all",q:""};
 
 function refHTML(p){
   // turn URLs written inside the reference into links
@@ -101,18 +116,65 @@ function refHTML(p){
   return h;
 }
 
-function render(){
+function groupAll(){
   const groups=SECTIONS.map(([key,title,id])=>({title,id,items:ALL.filter(p=>norm(p.type)===norm(key))}));
   const known=new Set(SECTIONS.map(s=>norm(s[0])));
   const other=ALL.filter(p=>!known.has(norm(p.type)));
   if(other.length) groups.push({title:"Other",id:"other",items:other});
   const shown=groups.filter(g=>g.items.length);
+  // newest first inside each section
   shown.forEach(g=>g.items.sort((a,b)=>(parseInt(b.year)||0)-(parseInt(a.year)||0)));
-  document.getElementById('nav').innerHTML = shown.length ?
-    '<hr><p class="nav">'+shown.map(g=>`<a href="#${g.id}">${esc(g.title)}</a>`).join(" | ")+'</p><hr>' : "";
-  document.getElementById('list').innerHTML = shown.length ? shown.map(g=>
+  return shown;
+}
+
+// does an item pass the year + search filters?
+function passes(p){
+  if(F.year!=="all" && p.year!==F.year) return false;
+  if(F.q){
+    const hay=(p.ref+" "+p.type+" "+p.year).toLowerCase();
+    if(!F.q.toLowerCase().split(/\s+/).every(w=>hay.includes(w))) return false;
+  }
+  return true;
+}
+
+function drawFilters(groups){
+  const nav=document.getElementById('nav');
+  if(!groups.length){ nav.innerHTML=""; return; }
+  const years=[...new Set(ALL.map(p=>p.year).filter(Boolean))].sort((a,b)=>b-a);
+  const chip=(id,label,n)=>`<button type="button" class="chip" data-sec="${id}" aria-pressed="${F.section===id}">${esc(label)}<span class="n">${n}</span></button>`;
+  nav.innerHTML='<hr><div class="filters"><div class="chips" role="group" aria-label="Filter by type">'
+    + chip("all","All",ALL.length)
+    + groups.map(g=>chip(g.id,g.title,g.items.length)).join("")
+    + '</div><div class="tools">'
+    + '<select id="year" aria-label="Filter by year"><option value="all">All years</option>'
+    + years.map(y=>`<option value="${y}"${F.year===y?" selected":""}>${y}</option>`).join("")
+    + '</select>'
+    + `<input id="q" type="search" placeholder="Search title or author…" aria-label="Search publications" value="${esc(F.q)}">`
+    + '</div></div><hr>';
+  nav.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{ F.section=b.dataset.sec; render(); });
+  nav.querySelector('#year').onchange=e=>{ F.year=e.target.value; render(); };
+  nav.querySelector('#q').oninput=e=>{ F.q=e.target.value.trim(); drawList(groupAll()); };
+}
+
+function drawList(groups){
+  const list=document.getElementById('list');
+  const vis=groups
+    .filter(g=>F.section==="all"||g.id===F.section)
+    .map(g=>({...g,items:g.items.filter(passes)}))
+    .filter(g=>g.items.length);
+  const n=vis.reduce((a,g)=>a+g.items.length,0);
+  const filtered=F.section!=="all"||F.year!=="all"||F.q;
+  document.getElementById('count').textContent = filtered ? `Showing ${n} of ${ALL.length}` : "";
+  list.innerHTML = vis.length ? vis.map(g=>
     `<h3 id="${g.id}">${esc(g.title)}</h3><ol>`+g.items.map(p=>`<li>${refHTML(p)}</li>`).join("")+`</ol>`).join("")
-    : '<p class="status">No publications to show.</p>';
+    : `<p class="status">${ALL.length?"No publications match these filters.":"No publications to show."}</p>`;
+}
+
+function render(){
+  const groups=groupAll();
+  if(F.section!=="all" && !groups.some(g=>g.id===F.section)) F.section="all";
+  drawFilters(groups);
+  drawList(groups);
 }
 
 // turns the rows of the sheet into the items shown on the page
