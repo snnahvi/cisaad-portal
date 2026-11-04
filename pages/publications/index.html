@@ -64,6 +64,7 @@
   .status{color:var(--muted);padding:16px 0}
   .video{position:relative;width:100%;max-width:560px;aspect-ratio:16/9;margin:12px 0 0;background:#f2f2f2}
   .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .totop{display:inline-block;font-size:13px;margin:4px 0 8px}
 </style>
 </head>
 <body>
@@ -194,6 +195,13 @@ document.addEventListener("click",e=>{
   b.lastChild.textContent="Hide video";
 });
 
+// "Back to top" under each section goes back to the filter buttons
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".totop")) return;
+  e.preventDefault();
+  try{ document.getElementById("nav").scrollIntoView({behavior:"smooth",block:"start"}); }catch(ex){}
+});
+
 function groupAll(){
   const groups=SECTIONS.map(([key,title,id])=>({title,id,items:ALL.filter(p=>norm(p.type)===norm(key))}));
   const known=new Set(SECTIONS.map(s=>norm(s[0])));
@@ -220,7 +228,7 @@ function drawFilters(groups){
   if(!groups.length){ nav.innerHTML=""; return; }
   const years=[...new Set(ALL.map(p=>p.year).filter(Boolean))].sort((a,b)=>b-a);
   const chip=(id,label,n)=>`<button type="button" class="chip" data-sec="${id}" aria-pressed="${F.section===id}">${esc(label)}<span class="n">${n}</span></button>`;
-  nav.innerHTML='<hr><div class="filters"><div class="chips" role="group" aria-label="Filter by type">'
+  nav.innerHTML='<hr><div class="filters"><div class="chips" role="group" aria-label="Jump to section">'
     + chip("all","All",ALL.length)
     + groups.map(g=>chip(g.id,g.title,g.items.length)).join("")
     + '</div><div class="tools">'
@@ -230,12 +238,16 @@ function drawFilters(groups){
     + `<input id="q" type="search" placeholder="Search title or author…" aria-label="Search publications" value="${esc(F.q)}">`
     + '</div></div><hr>';
   // after a filter change, go back to the top of the list
-  const toTop=()=>{ try{ window.scrollTo({top:0,behavior:"smooth"}); }catch(e){} };
+  const toTop=()=>{ try{ nav.scrollIntoView({behavior:"smooth",block:"start"}); }catch(e){} };
+  // section buttons jump to their section instead of hiding the others,
+  // so the page keeps its full height and no empty space is left below
   nav.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
-    F.section=b.dataset.sec; render(); toTop();
-    const a=document.querySelector(`.chip[data-sec="${F.section}"]`);
+    F.section=b.dataset.sec;
+    nav.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed', c===b));
+    const target = F.section==="all" ? nav : document.getElementById(F.section);
+    if(target){ try{ target.scrollIntoView({behavior:"smooth",block:"start"}); }catch(e){} }
     // keep the chosen button visible in the swipeable row (phones)
-    if(a){ const row=a.parentNode; row.scrollLeft=a.offsetLeft-row.offsetLeft-(row.clientWidth-a.offsetWidth)/2; }
+    const row=b.parentNode; row.scrollLeft=b.offsetLeft-row.offsetLeft-(row.clientWidth-b.offsetWidth)/2;
   });
   nav.querySelector('#year').onchange=e=>{ F.year=e.target.value; render(); toTop(); };
   nav.querySelector('#q').oninput=e=>{ F.q=e.target.value.trim(); drawList(groupAll()); };
@@ -244,14 +256,13 @@ function drawFilters(groups){
 function drawList(groups){
   const list=document.getElementById('list');
   const vis=groups
-    .filter(g=>F.section==="all"||g.id===F.section)
     .map(g=>({...g,items:g.items.filter(passes)}))
     .filter(g=>g.items.length);
   const n=vis.reduce((a,g)=>a+g.items.length,0);
-  const filtered=F.section!=="all"||F.year!=="all"||F.q;
+  const filtered=F.year!=="all"||F.q;
   document.getElementById('count').textContent = filtered ? `Showing ${n} of ${ALL.length}` : "";
   list.innerHTML = vis.length ? vis.map(g=>
-    `<h3 id="${g.id}">${esc(g.title)}<span class="n">(${g.items.length})</span></h3><ul class="cards">`+g.items.map(cardHTML).join("")+`</ul>`).join("")
+    `<h3 id="${g.id}">${esc(g.title)}<span class="n">(${g.items.length})</span></h3><ul class="cards">`+g.items.map(cardHTML).join("")+`</ul><a href="#" class="totop">↑ Back to top</a>`).join("")
     : `<p class="status">${ALL.length?"No publications match these filters.":"No publications to show."}</p>`;
   if(F.q) highlight(list, F.q);
 }
