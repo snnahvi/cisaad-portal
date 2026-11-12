@@ -15,6 +15,12 @@ body{margin:0;background:#fff;color:#000;font-family:Inter,Arial,sans-serif}
 .chips a{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#000;text-decoration:none;border:1px solid var(--lgray);border-radius:999px;padding:6px 12px;background:#fff}
 .chips a:hover{border-color:#000}
 .chips small{font-weight:500;color:var(--dgray)}
+.quote{position:relative;margin:4px 0 22px;padding:22px 26px 18px 58px;background:#fafafa;border-radius:6px}
+.quote:before{content:"\201C";position:absolute;left:16px;top:6px;font-family:Georgia,serif;font-size:64px;line-height:1;color:var(--gold)}
+.quote p{margin:0;font-size:16.5px;line-height:1.55;font-weight:500}
+.quote .by{margin-top:10px;font-size:13px;font-weight:400;color:var(--dgray)}
+.quote .by a{color:var(--teal);font-weight:600;text-decoration:none}
+.quote .by a:hover{text-decoration:underline}
 section{margin-bottom:30px}
 h2{display:inline-block;margin:0 0 14px;font-size:20px;padding-bottom:5px;border-bottom:3px solid var(--gold)}
 h2 a{color:#000;text-decoration:none}
@@ -42,6 +48,8 @@ h2 small{font-size:13px;font-weight:500;color:var(--dgray)}
 @media (max-width:500px){.grid{grid-template-columns:repeat(2,1fr)}.map{height:960px}}
 @media (max-width:340px){.grid{grid-template-columns:1fr}}
 </style></head><body><div id="page"></div><div class="wrap">
+<figure class="quote"><p>Voice-cloning is outpacing the law as technologists hone previously clunky voice generators into models capable of emulating the subtlest pauses and breathing of human intonation.</p>
+<p class="by">— <a href="https://www.theguardian.com/technology/2024/nov/19/ai-cloning-of-celebrity-voices-outpacing-the-law-experts-warn" target="_blank" rel="noopener">The Guardian</a>, <em>AI cloning of celebrity voices outpacing the law, experts warn</em> (Nov 2024)</p></figure>
 <nav id="top"><div class="chips" id="chips"></div></nav>
 <main id="content"><p class="err">Loading…</p></main>
 </div>
