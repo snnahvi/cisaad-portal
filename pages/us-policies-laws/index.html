@@ -10,12 +10,12 @@
 html{scroll-behavior:smooth}
 body{margin:0;background:#fff;color:#000;font-family:Inter,Arial,sans-serif}
 .wrap{max-width:900px;margin:0 auto;padding:4px 4px 24px}
-#top{border-top:1px solid var(--lgray);border-bottom:1px solid var(--lgray);padding:14px 0;margin-bottom:22px}
+#top{position:sticky;top:0;z-index:5;background:#fff;border-top:1px solid var(--lgray);border-bottom:1px solid var(--lgray);padding:10px 0;margin-bottom:22px}
 .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
 .chips a{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#000;text-decoration:none;border:1px solid var(--lgray);border-radius:999px;padding:6px 12px;background:#fff}
 .chips a:hover{border-color:#000}
 .chips small{font-weight:500;color:var(--dgray)}
-section{margin-bottom:30px;scroll-margin-top:10px}
+section{margin-bottom:30px;scroll-margin-top:var(--navh,110px)}
 h2{display:inline-block;margin:0 0 14px;font-size:20px;padding-bottom:5px;border-bottom:3px solid var(--gold)}
 h2 a{color:#000;text-decoration:none}
 h2 a:hover{text-decoration:underline}
@@ -41,7 +41,7 @@ h2 small{font-size:13px;font-weight:500;color:var(--dgray)}
 .err{font-size:14px;color:var(--dgray);text-align:center;padding:30px}
 @media (max-width:500px){.grid{grid-template-columns:repeat(2,1fr)}.map{height:960px}}
 @media (max-width:340px){.grid{grid-template-columns:1fr}}
-</style></head><body><div class="wrap">
+</style></head><body><div id="page"></div><div class="wrap">
 <nav id="top"><div class="chips" id="chips"></div></nav>
 <main id="content"><p class="err">Loading…</p></main>
 </div>
@@ -84,10 +84,11 @@ Promise.all(["sections.csv","resources.csv"].map(u=>fetch(u,{cache:"no-store"}).
   html+=`<section id="${id}"><h2>${head}${n!==""?` <small>(${n})</small>`:""}</h2>`+
    (sec.Intro&&!isMap?`<p class="intro">${esc(sec.Intro)}</p>`:"")+
    (isMap?`<iframe class="map" src="${MAP_URL}" loading="lazy" title="US AI and deepfake legislation heat maps"></iframe>`:`<div class="grid">${items.map(card).join("")}</div>`)+
-   `<a class="totop" href="#top">↑ Back to top</a></section>`;
+   `<a class="totop" href="#page">↑ Back to top</a></section>`;
  });
  document.getElementById("chips").innerHTML=chips;
  document.getElementById("content").innerHTML=html;
+ const setH=()=>document.documentElement.style.setProperty("--navh",(document.getElementById("top").offsetHeight+12)+"px");setH();addEventListener("resize",setH);
 }).catch(()=>{document.getElementById("content").innerHTML='<p class="err">Could not load the data. Please try again later.</p>';});
 </script>
 </body></html>
