@@ -10,12 +10,12 @@
 html{scroll-behavior:smooth}
 body{margin:0;background:#fff;color:#000;font-family:Inter,Arial,sans-serif}
 .wrap{max-width:900px;margin:0 auto;padding:4px 4px 24px}
-#top{position:sticky;top:0;z-index:5;background:#fff;border-top:1px solid var(--lgray);border-bottom:1px solid var(--lgray);padding:10px 0;margin-bottom:22px}
+#top{border-top:1px solid var(--lgray);border-bottom:1px solid var(--lgray);padding:10px 0;margin-bottom:22px}
 .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
 .chips a{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#000;text-decoration:none;border:1px solid var(--lgray);border-radius:999px;padding:6px 12px;background:#fff}
 .chips a:hover{border-color:#000}
 .chips small{font-weight:500;color:var(--dgray)}
-section{margin-bottom:30px;scroll-margin-top:var(--navh,110px)}
+section{margin-bottom:30px}
 h2{display:inline-block;margin:0 0 14px;font-size:20px;padding-bottom:5px;border-bottom:3px solid var(--gold)}
 h2 a{color:#000;text-decoration:none}
 h2 a:hover{text-decoration:underline}
@@ -88,7 +88,11 @@ Promise.all(["sections.csv","resources.csv"].map(u=>fetch(u,{cache:"no-store"}).
  });
  document.getElementById("chips").innerHTML=chips;
  document.getElementById("content").innerHTML=html;
- const setH=()=>document.documentElement.style.setProperty("--navh",(document.getElementById("top").offsetHeight+12)+"px");setH();addEventListener("resize",setH);
 }).catch(()=>{document.getElementById("content").innerHTML='<p class="err">Could not load the data. Please try again later.</p>';});
+/* Jump links: the page sits in a tall iframe on WordPress, so normal #links cannot scroll
+   the WordPress page. scrollIntoView() does, so chips and "Back to top" use it. */
+document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;
+ const el=document.getElementById(a.getAttribute("href").slice(1));if(!el)return;
+ e.preventDefault();el.scrollIntoView({behavior:"smooth",block:"start"});});
 </script>
 </body></html>
