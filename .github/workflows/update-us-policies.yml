@@ -1,0 +1,51 @@
+# Copies the US Policies Google Sheet (tabs "Resources" and "Sections") into
+# pages/us-policies-laws/resources.csv and sections.csv every hour.
+# You can also run it by hand: GitHub -> Actions -> "Update US policies data" -> Run workflow.
+name: Update US policies data
+
+on:
+  schedule:
+    - cron: "47 * * * *"   # every hour, at minute 47 (UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    # only run in the repo that hosts the page on GitHub Pages
+    if: github.repository == 'snnahvi/cisaad-portal'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download the sheet
+        env:
+          TAB_A_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2suSZ1M0V5ZMXRGAGfeJ0ZSsolg9AOVT8mW8821HnAH1PdCytsKkPYhbazZzhM6h1H67cRsOt9EL-/pub?gid=1692809070&single=true&output=csv"
+          TAB_B_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2suSZ1M0V5ZMXRGAGfeJ0ZSsolg9AOVT8mW8821HnAH1PdCytsKkPYhbazZzhM6h1H67cRsOt9EL-/pub?gid=355640421&single=true&output=csv"
+        run: |
+          curl -sSL --fail "$TAB_A_CSV_URL" -o /tmp/a.csv
+          curl -sSL --fail "$TAB_B_CSV_URL" -o /tmp/b.csv
+          # tell the two tabs apart by their header row
+          for f in /tmp/a.csv /tmp/b.csv; do
+            header=$(head -n 1 "$f")
+            if   echo "$header" | grep -q "^Section,Order,Heading"; then cp "$f" /tmp/sections.csv
+            elif echo "$header" | grep -q "^Section,Order,Source,Title"; then cp "$f" /tmp/resources.csv
+            else echo "Unexpected header in $f: $header"; exit 1; fi
+          done
+          # safety check: both tabs must be present
+          [ -s /tmp/resources.csv ] && [ -s /tmp/sections.csv ] || { echo "Missing Resources or Sections tab"; exit 1; }
+          cp /tmp/resources.csv pages/us-policies-laws/resources.csv
+          cp /tmp/sections.csv  pages/us-policies-laws/sections.csv
+
+      - name: Save if changed
+        run: |
+          if git diff --quiet -- pages/us-policies-laws/resources.csv pages/us-policies-laws/sections.csv; then
+            echo "No changes in the sheet."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add pages/us-policies-laws/resources.csv pages/us-policies-laws/sections.csv
+            git commit -m "Update US policies data from Google Sheet"
+            git push
+          fi

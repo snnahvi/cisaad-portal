@@ -1,0 +1,42 @@
+Section,Order,Source,Title,Summary,Year,Status,Link,Show,Notes
+Overall Legislation Sources,1,Reuters,Deepfakes: Federal and state regulation aims to curb a growing threat,,,,https://cisaad.umbc.edu/overall-legislation-sources/#1,TRUE,
+Overall Legislation Sources,2,Plural Policy,Deepfake Laws: A Comprehensive Overview,,,,https://cisaad.umbc.edu/overall-legislation-sources/#2,TRUE,
+Overall Legislation Sources,3,Ballotpedia,"Deepfake policy in the United States, 2019 - Present - Ballotpedia",,,,https://cisaad.umbc.edu/overall-legislation-sources/#3,TRUE,
+Federal Legislation (Passed),1,U.S. Congressional Research Service,Identifying Outputs of Generative Adversarial Networks Act,,2020,Law,https://cisaad.umbc.edu/federal-legislation/#1,TRUE,
+Federal Legislation (Passed),2,U.S. Congressional Research Service,TAKE IT DOWN Act,,2025,Law,https://cisaad.umbc.edu/federal-legislation/#2,TRUE,
+Federal Legislation (In Consideration),1,,DEFIANCE Act of 2025,,2025,In Congress,https://cisaad.umbc.edu/federal-legislation/#3,TRUE,
+Federal Legislation (In Consideration),2,,The Preventing Deep Fakes Scams Act,,2025,In Congress,https://cisaad.umbc.edu/federal-legislation/#4,TRUE,
+Federal Legislation (In Consideration),3,,Content Origin Protection and Integrity from Edited and Deepfaked Media Act of 2025,,2025,In Congress,https://cisaad.umbc.edu/federal-legislation/#5,TRUE,
+Federal Legislation (In Consideration),4,,Preventing Deepfakes of Intimate Images Act,,2025,In Congress,https://cisaad.umbc.edu/federal-legislation/#6,TRUE,
+Federal Legislation (In Consideration),5,,Protect Elections from Deceptive AI Act,,2025,In Congress,https://cisaad.umbc.edu/federal-legislation/#7,TRUE,
+Federal Legislation (In Consideration),6,,NO FAKES Act of 2025,,2025,In Congress,https://cisaad.umbc.edu/federal-legislation/#8,TRUE,
+Federal Legislation (In Consideration),7,,AI PLAN Act,,2025,In Congress,https://cisaad.umbc.edu/federal-legislation/#6,TRUE,"Link points to #6 (Preventing Deepfakes of Intimate Images). AI PLAN Act is the 9th item on the federal page, so it should be #9."
+State Legislation Databases,1,National Conference of State Legislatures,Deceptive Audio or Visual Media (‘Deepfakes’) 2024 Legislation,,,,https://cisaad.umbc.edu/state-legislation-databases/#1,TRUE,Title says 2024. Check if NCSL has a newer page.
+State Legislation Databases,2,Public Citizen,Tracker Legislation on Deepfakes in Elections,,,,https://cisaad.umbc.edu/state-legislation-databases/#2,TRUE,
+State Legislation Databases,3,Ballotpedia,AI Deepfake Legislation Tracker,,,,https://cisaad.umbc.edu/state-legislation-databases/#3,TRUE,
+State Legislation Databases,4,National Conference of State Legislatures,Artificial Intelligence Legislation Database,,,,https://cisaad.umbc.edu/state-legislation-databases/#4,TRUE,
+Maryland General Assembly,1,,Senate Bill 360,"Extends Maryland's law on sharing intimate images without consent to computer-generated images, and lets victims sue.",2025,Law,https://cisaad.umbc.edu/maryland-general-assembly-laws/#1,TRUE,
+Maryland General Assembly,2,,Senate Bill 8,"Makes it identity fraud to use AI or deepfakes of a person to cause harm, and lets victims sue.",2026,Law,https://mgaleg.maryland.gov/mgawebsite/Legislation/Details/sb0008?ys=2026RS,TRUE,NEW. Links to the official MGA page; no entry on the internal Maryland page yet.
+Maryland General Assembly,3,,Senate Bill 141,Bans using deepfakes to mislead voters; election officials respond to reports of false election information.,2026,Law,https://mgaleg.maryland.gov/mgawebsite/Legislation/Details/sb0141?ys=2026RS,TRUE,NEW. Links to the official MGA page; no entry on the internal Maryland page yet.
+Maryland General Assembly,4,,Senate Bill 221,"Updates crimes and penalties for child sexual abuse material, including images made with AI.",2026,Law,https://mgaleg.maryland.gov/mgawebsite/Legislation/Details/sb0221?ys=2026RS,TRUE,NEW. Links to the official MGA page; no entry on the internal Maryland page yet.
+Maryland General Assembly,5,,House Bill 525,,2025,Not passed,https://cisaad.umbc.edu/maryland-general-assembly-laws/#2,FALSE,"Stalled in 2025, per the Maryland page."
+Maryland General Assembly,6,,House Bill 1425 / Senate Bill 905,,2025,Not passed,https://cisaad.umbc.edu/maryland-general-assembly-laws/#3,FALSE,Stalled in 2025. Reintroduced in 2026 as HB 184 / SB 8; SB 8 became law.
+Maryland General Assembly,7,,House Bill 663,,,Not passed,https://cisaad.umbc.edu/maryland-general-assembly-laws/#4,FALSE,"Title typo on the page (0633 → 663). 2025 bill, stalled, per the Maryland page."
+Maryland General Assembly,8,,House Bill 145,,2024,Not passed,https://cisaad.umbc.edu/maryland-general-assembly-laws/#5,FALSE,This card is the 2024 HB 145 (Deep Fake Representations & Harassment); it passed the House but failed in the Senate.
+Maryland General Assembly,9,,House Bill 198,,2020,Not passed,https://cisaad.umbc.edu/maryland-general-assembly-laws/#6,FALSE,A 2020-session bill on deepfakes in campaign material. The Maryland page gives no status. Suggest hiding.
+Maryland General Assembly,10,,Legislation Status Tracker,,,,https://cisaad.umbc.edu/maryland-general-assembly-laws/#7,TRUE,
+Hearings & Reports,1,Congress,Addressing Real Harm Done by Deepfakes,,,,https://cisaad.umbc.edu/hearings-reports/#1,TRUE,
+Hearings & Reports,2,Department of Homeland Security,Increasing Threat of DeepFake Identities,,,,https://cisaad.umbc.edu/hearings-reports/#2,TRUE,
+Hearings & Reports,3,Department of Homeland Security,Addendum,,,,https://cisaad.umbc.edu/hearings-reports/#3,TRUE,
+Hearings & Reports,4,Department of Homeland Security,Phase 2: Deepfake Mitigation Measures,,,,https://cisaad.umbc.edu/hearings-reports/#4,TRUE,
+Hearings & Reports,5,US Government Accountability Office,Science & Tech Spotlight: Deepfakes,,,,https://cisaad.umbc.edu/hearings-reports/#5,TRUE,
+Hearings & Reports,6,Federal Communications Commission,Deep-Fake Audio and Video Links Make Robocalls and Scam Texts Harder to Spot,,,,https://cisaad.umbc.edu/hearings-reports/#6,TRUE,
+Hearings & Reports,7,Department of Defense,Contextualizing Deepfake Threats to Organizations,,,,https://cisaad.umbc.edu/hearings-reports/#7,TRUE,
+Agency Programs,1,Defense Advanced Research Projects Agency,Semantic Forensics (SemaFor),,,,https://cisaad.umbc.edu/agency-programs/#1,TRUE,
+Agency Programs,2,Federal Trade Commission,New Protections to Combat AI Impersonation of Individuals,,,,https://cisaad.umbc.edu/agency-programs/#2,TRUE,
+Agency Programs,3,Federal Trade Commission,Proposed Amendments to Trade Regulation Rule on Impersonation of Government and Businesses,,,,https://cisaad.umbc.edu/agency-programs/#3,TRUE,
+Opinion Pieces to Policymakers,1,Brennan Center for Justice,Regulating AI Deepfakes and Synthetic Media in the Political Arena,,,,https://cisaad.umbc.edu/opinion-pieces/#1,TRUE,
+Opinion Pieces to Policymakers,2,IBM,"Here's What Policymakers Can Do About Deepfakes, Right Now",,,,https://cisaad.umbc.edu/opinion-pieces/#2,TRUE,
+Opinion Pieces to Policymakers,3,The Princeton Legal Journal,The High Stakes of Deepfakes: The Growing Necessity of Federal Legislation to Regulate This Rapidly Evolving Technology,,,,https://cisaad.umbc.edu/opinion-pieces/#3,TRUE,
+Opinion Pieces to Policymakers,4,Policy Paper Submitted to NIST (PDF),Combatting deepfakes: Policies to address national security threats and rights violations,,,,https://cisaad.umbc.edu/opinion-pieces/#4,TRUE,
+Opinion Pieces to Policymakers,5,Center for Strategic and International Studies,Trust Your Eyes? Deepfakes Policy Brief,,,,https://cisaad.umbc.edu/opinion-pieces/#5,TRUE,

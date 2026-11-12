@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US Policies & Laws – CISAAD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* UMBC colors + Inter (styleguide.umbc.edu) */
+:root{--black:#000;--gold:#fdb515;--lgray:#c7c8ca;--dgray:#636466;--teal:#007176}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#fff;color:#000;font-family:Inter,Arial,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:4px 4px 24px}
+#top{border-top:1px solid var(--lgray);border-bottom:1px solid var(--lgray);padding:14px 0;margin-bottom:22px}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.chips a{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#000;text-decoration:none;border:1px solid var(--lgray);border-radius:999px;padding:6px 12px;background:#fff}
+.chips a:hover{border-color:#000}
+.chips small{font-weight:500;color:var(--dgray)}
+section{margin-bottom:30px;scroll-margin-top:10px}
+h2{margin:0 0 4px;font-size:20px}
+h2 a{color:#000;text-decoration:none}
+h2 a:hover{text-decoration:underline}
+h2 small{font-size:13px;font-weight:500;color:var(--dgray)}
+.bar{width:120px;height:3px;background:var(--gold);margin-bottom:14px}
+.intro{font-size:14px;line-height:1.55;margin:0 0 14px}
+.card{border:1px solid var(--lgray);border-left:4px solid var(--gold);border-radius:4px;padding:12px 14px;margin-bottom:10px}
+.ct{display:flex;gap:8px;align-items:flex-start}
+.yr{flex:none;background:#000;color:var(--gold);font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;margin-top:1px}
+.tt{font-size:15px;font-weight:600;line-height:1.35}
+.meta{font-size:12.5px;color:var(--dgray);margin:4px 0 0}
+.meta i{font-style:italic}
+.st{display:inline-block;font-size:11px;font-weight:600;border-radius:3px;padding:1px 7px;margin-left:6px;vertical-align:1px}
+.st.law{background:var(--teal);color:#fff}
+.st.cong{border:1px solid var(--gold);color:#000}
+.st.np{background:#eee;color:var(--dgray)}
+.sum{font-size:13.5px;line-height:1.5;margin:6px 0 0}
+.btn{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:12.5px;font-weight:600;color:var(--teal);text-decoration:none;border:1px solid var(--teal);border-radius:4px;padding:4px 10px}
+.btn:hover{background:var(--teal);color:#fff}
+.totop{display:block;text-align:right;font-size:12px;color:var(--teal);margin-top:4px}
+.map{width:100%;height:880px;border:0}
+.err{font-size:14px;color:var(--dgray);text-align:center;padding:30px}
+@media (max-width:520px){.map{height:960px}}
+</style></head><body><div class="wrap">
+<nav id="top"><div class="chips" id="chips"></div></nav>
+<main id="content"><p class="err">Loading…</p></main>
+</div>
+<script>
+/* Data comes from the Google Sheet (tabs Resources + Sections), copied into
+   resources.csv and sections.csv by the GitHub workflow. Only rows with Show = TRUE appear. */
+const SHORT={"Overall Legislation Sources":"Overall Sources","Federal Legislation (Passed)":"Federal: Passed",
+ "Federal Legislation (In Consideration)":"Federal: In Consideration","State Legislation Databases":"State Databases",
+ "Heat Maps":"Heat Maps","Maryland General Assembly":"Maryland","Hearings & Reports":"Hearings & Reports",
+ "Agency Programs":"Agency Programs","Opinion Pieces to Policymakers":"Opinion Pieces"};
+const MAP_URL="heatmap/";
+function parseCSV(t){const rows=[];let r=[],f="",q=false;
+ for(let i=0;i<t.length;i++){const c=t[i];
+  if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+  else if(c=='"')q=true;else if(c==','){r.push(f);f=""}
+  else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;r.push(f);rows.push(r);r=[];f=""}else f+=c}
+ if(f!==""||r.length){r.push(f);rows.push(r)}
+ const h=rows.shift().map(s=>s.trim());
+ return rows.filter(x=>x.some(v=>v.trim())).map(x=>Object.fromEntries(h.map((k,i)=>[k,(x[i]||"").trim()])));}
+const yes=v=>/^(true|yes|1|✓)$/i.test(v);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function status(s){if(!s)return"";const c=/law/i.test(s)?"law":/congress/i.test(s)?"cong":"np";return`<span class="st ${c}">${esc(s)}</span>`;}
+function card(r){
+ const meta=[r.Source?`<i>${esc(r.Source)}</i>`:"",status(r.Status)].filter(Boolean).join(" ");
+ return `<div class="card"><div class="ct">${r.Year?`<span class="yr">${esc(r.Year)}</span>`:""}<span class="tt">${esc(r.Title)}</span></div>`+
+  (meta?`<p class="meta">${meta}</p>`:"")+(r.Summary?`<p class="sum">${esc(r.Summary)}</p>`:"")+
+  (r.Link?`<a class="btn" href="${esc(r.Link)}" target="_top">Read more →</a>`:"")+`</div>`;}
+Promise.all(["sections.csv","resources.csv"].map(u=>fetch(u,{cache:"no-store"}).then(x=>{if(!x.ok)throw u;return x.text()})))
+.then(([s,r])=>{
+ const secs=parseCSV(s).filter(x=>yes(x.Show)).sort((a,b)=>(+a.Order||99)-(+b.Order||99));
+ const res=parseCSV(r).filter(x=>yes(x.Show));
+ let chips="",html="";
+ secs.forEach(sec=>{
+  const id=slug(sec.Section),items=res.filter(x=>x.Section===sec.Section).sort((a,b)=>(+a.Order||99)-(+b.Order||99));
+  const isMap=sec.Section==="Heat Maps",n=isMap?"":items.length;
+  if(!isMap&&!items.length&&!sec.Intro)return;
+  chips+=`<a href="#${id}">${esc(SHORT[sec.Section]||sec.Section)}${n!==""?` <small>${n}</small>`:""}</a>`;
+  const head=sec["Heading Link"]?`<a href="${esc(sec["Heading Link"])}" target="_top">${esc(sec.Heading||sec.Section)}</a>`:esc(sec.Heading||sec.Section);
+  html+=`<section id="${id}"><h2>${head}${n!==""?` <small>(${n})</small>`:""}</h2><div class="bar"></div>`+
+   (sec.Intro&&!isMap?`<p class="intro">${esc(sec.Intro)}</p>`:"")+
+   (isMap?`<iframe class="map" src="${MAP_URL}" loading="lazy" title="US AI and deepfake legislation heat maps"></iframe>`:items.map(card).join(""))+
+   `<a class="totop" href="#top">↑ Back to top</a></section>`;
+ });
+ document.getElementById("chips").innerHTML=chips;
+ document.getElementById("content").innerHTML=html;
+}).catch(()=>{document.getElementById("content").innerHTML='<p class="err">Could not load the data. Please try again later.</p>';});
+</script>
+</body></html>
