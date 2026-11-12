@@ -16,29 +16,31 @@ body{margin:0;background:#fff;color:#000;font-family:Inter,Arial,sans-serif}
 .chips a:hover{border-color:#000}
 .chips small{font-weight:500;color:var(--dgray)}
 section{margin-bottom:30px;scroll-margin-top:10px}
-h2{margin:0 0 4px;font-size:20px}
+h2{display:inline-block;margin:0 0 14px;font-size:20px;padding-bottom:5px;border-bottom:3px solid var(--gold)}
 h2 a{color:#000;text-decoration:none}
 h2 a:hover{text-decoration:underline}
 h2 small{font-size:13px;font-weight:500;color:var(--dgray)}
-.bar{width:120px;height:3px;background:var(--gold);margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .intro{font-size:14px;line-height:1.55;margin:0 0 14px}
-.card{border:1px solid var(--lgray);border-left:4px solid var(--gold);border-radius:4px;padding:12px 14px;margin-bottom:10px}
-.ct{display:flex;gap:8px;align-items:flex-start}
-.yr{flex:none;background:#000;color:var(--gold);font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;margin-top:1px}
-.tt{font-size:15px;font-weight:600;line-height:1.35}
-.meta{font-size:12.5px;color:var(--dgray);margin:4px 0 0}
+.card{display:flex;flex-direction:column;border:1px solid var(--lgray);border-left:4px solid var(--gold);border-radius:4px;padding:10px 12px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.yr{background:#000;color:var(--gold);font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px}
+.tt{font-size:13.5px;font-weight:600;line-height:1.35}
+.meta{font-size:12.5px;color:var(--dgray);margin:4px 0 10px}
+.card>.tt{margin-bottom:10px}.card>.tt:has(+.meta),.card>.tt:has(+.sum){margin-bottom:0}
 .meta i{font-style:italic}
-.st{display:inline-block;font-size:11px;font-weight:600;border-radius:3px;padding:1px 7px;margin-left:6px;vertical-align:1px}
+.st{display:inline-block;font-size:11px;font-weight:600;border-radius:999px;padding:2px 8px}
 .st.law{background:var(--teal);color:#fff}
 .st.cong{border:1px solid var(--gold);color:#000}
 .st.np{background:#eee;color:var(--dgray)}
-.sum{font-size:13.5px;line-height:1.5;margin:6px 0 0}
-.btn{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:12.5px;font-weight:600;color:var(--teal);text-decoration:none;border:1px solid var(--teal);border-radius:4px;padding:4px 10px}
+.sum{font-size:13px;line-height:1.45;margin:6px 0 10px}
+.btn{align-self:flex-start;white-space:nowrap;margin-top:auto!important;display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:12.5px;font-weight:600;color:var(--teal);text-decoration:none;border:1px solid var(--teal);border-radius:4px;padding:4px 10px}
 .btn:hover{background:var(--teal);color:#fff}
-.totop{display:block;text-align:right;font-size:12px;color:var(--teal);margin-top:4px}
+.totop{display:block;text-align:right;font-size:12px;color:var(--teal);margin-top:8px}
 .map{width:100%;height:880px;border:0}
 .err{font-size:14px;color:var(--dgray);text-align:center;padding:30px}
-@media (max-width:520px){.map{height:960px}}
+@media (max-width:500px){.grid{grid-template-columns:repeat(2,1fr)}.map{height:960px}}
+@media (max-width:340px){.grid{grid-template-columns:1fr}}
 </style></head><body><div class="wrap">
 <nav id="top"><div class="chips" id="chips"></div></nav>
 <main id="content"><p class="err">Loading…</p></main>
@@ -64,9 +66,9 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 function status(s){if(!s)return"";const c=/law/i.test(s)?"law":/congress/i.test(s)?"cong":"np";return`<span class="st ${c}">${esc(s)}</span>`;}
 function card(r){
- const meta=[r.Source?`<i>${esc(r.Source)}</i>`:"",status(r.Status)].filter(Boolean).join(" ");
- return `<div class="card"><div class="ct">${r.Year?`<span class="yr">${esc(r.Year)}</span>`:""}<span class="tt">${esc(r.Title)}</span></div>`+
-  (meta?`<p class="meta">${meta}</p>`:"")+(r.Summary?`<p class="sum">${esc(r.Summary)}</p>`:"")+
+ const tags=(r.Year?`<span class="yr">${esc(r.Year)}</span>`:"")+status(r.Status);
+ return `<div class="card">${tags?`<div class="tags">${tags}</div>`:""}<span class="tt">${esc(r.Title)}</span>`+
+  (r.Source?`<p class="meta"><i>${esc(r.Source)}</i></p>`:"")+(r.Summary?`<p class="sum">${esc(r.Summary)}</p>`:"")+
   (r.Link?`<a class="btn" href="${esc(r.Link)}" target="_top">Read more →</a>`:"")+`</div>`;}
 Promise.all(["sections.csv","resources.csv"].map(u=>fetch(u,{cache:"no-store"}).then(x=>{if(!x.ok)throw u;return x.text()})))
 .then(([s,r])=>{
@@ -79,9 +81,9 @@ Promise.all(["sections.csv","resources.csv"].map(u=>fetch(u,{cache:"no-store"}).
   if(!isMap&&!items.length&&!sec.Intro)return;
   chips+=`<a href="#${id}">${esc(SHORT[sec.Section]||sec.Section)}${n!==""?` <small>${n}</small>`:""}</a>`;
   const head=sec["Heading Link"]?`<a href="${esc(sec["Heading Link"])}" target="_top">${esc(sec.Heading||sec.Section)}</a>`:esc(sec.Heading||sec.Section);
-  html+=`<section id="${id}"><h2>${head}${n!==""?` <small>(${n})</small>`:""}</h2><div class="bar"></div>`+
+  html+=`<section id="${id}"><h2>${head}${n!==""?` <small>(${n})</small>`:""}</h2>`+
    (sec.Intro&&!isMap?`<p class="intro">${esc(sec.Intro)}</p>`:"")+
-   (isMap?`<iframe class="map" src="${MAP_URL}" loading="lazy" title="US AI and deepfake legislation heat maps"></iframe>`:items.map(card).join(""))+
+   (isMap?`<iframe class="map" src="${MAP_URL}" loading="lazy" title="US AI and deepfake legislation heat maps"></iframe>`:`<div class="grid">${items.map(card).join("")}</div>`)+
    `<a class="totop" href="#top">↑ Back to top</a></section>`;
  });
  document.getElementById("chips").innerHTML=chips;
