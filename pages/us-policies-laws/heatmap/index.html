@@ -70,7 +70,7 @@ h3{text-align:center;font-size:17px;font-weight:700;margin:10px 0 0}
 
 <div id="main">
  <p class="intro">How many laws on <b>AI</b> and on <b>deepfakes</b> has each U.S. state enacted? Darker states have more.</p>
- <div class="hint"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 8-6 2-3 6z" fill="#000"/></svg>Hover over a state to see its bills.</div>
+ <div class="hint"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 8-6 2-3 6z" fill="#000"/></svg>Hover over a state to see its bills. Click <b>Maryland</b> to see what each law does.</div>
  <div class="tabs" role="group" aria-label="Choose map">
   <button data-k="ai" aria-pressed="true">AI Regulation</button>
   <button data-k="deepfake" aria-pressed="false">Deepfake Regulation</button>
@@ -127,6 +127,9 @@ delete f.layout.title; delete f.layout.updatemenus; f.layout.annotations=[];
 f.layout.height=null;f.layout.autosize=true;f.layout.margin={l:0,r:0,t:0,b:70};
 f.layout.dragmode=false;f.layout.font={family:"Inter, Arial, sans-serif"};
 f.layout.hoverlabel={bgcolor:"#000",bordercolor:"#000",align:"left",font:{color:"#fff",family:"Inter, Arial, sans-serif",size:13}};
+/* States with written summaries can be clicked for details (for now: Maryland) */
+const CLICKABLE=Object.keys(BILLS).filter(st=>BILLS[st].some(b=>b.s));
+f.data.forEach(t=>{t.customdata=t.customdata.map((c,i)=>CLICKABLE.includes(t.locations[i])?c+"<br><i>Click for details</i>":c);});
 Plotly.newPlot("map",f.data,f.layout,{topojsonURL:"./",responsive:true,displayModeBar:false,scrollZoom:false});
 const TITLES={ai:"AI Regulation by State",deepfake:"Deepfake Regulation by State"};
 const $=id=>document.getElementById(id);
@@ -152,11 +155,9 @@ function open(st){
    `<span class="tt">${esc(b.t||full)}</span><span class="cd">${esc(b.c)}</span>${has?'<svg class="car" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M4 2l4 4-4 4" fill="none" stroke="#636466" stroke-width="2"/></svg>':""}</button>`+
    (has?`<div class="rb"><div class="fn">${esc(full)}</div>${esc(b.s)}<br><a href="${b.u}" target="_blank" rel="noopener">Read the bill →</a></div>`:"")+`</div>`;}).join("")).join("");
  document.querySelectorAll("#dlist .rh:not([disabled])").forEach(h=>h.onclick=()=>h.parentNode.classList.toggle("open"));
- $("main").style.display="none";$("detail").style.display="block";window.scrollTo(0,0);
+ $("main").style.display="none";$("detail").style.display="block";$("detail").scrollIntoView({block:"start"});
 }
-/* Detail pages: set to true once summaries are ready for all states */
-const DETAILS_ON=false;
-if(DETAILS_ON)$("map").on("plotly_click",e=>open(e.points[0].location));
-$("back").onclick=()=>{$("detail").style.display="none";$("main").style.display="block";Plotly.Plots.resize("map");window.scrollTo(0,0);};
+$("map").on("plotly_click",e=>{const st=e.points[0].location;if(CLICKABLE.includes(st))open(st);});
+$("back").onclick=()=>{$("detail").style.display="none";$("main").style.display="block";Plotly.Plots.resize("map");$("main").scrollIntoView({block:"start"});};
 </script>
 </body></html>
