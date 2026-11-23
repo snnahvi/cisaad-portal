@@ -1,0 +1,43 @@
+# Copies the heat map Google Sheet (tab "Laws", CSV) into
+# pages/us-policies-laws/heatmap/heatmap-data.csv every hour, so the map can open instantly.
+# The page then also checks the live sheet and redraws if something changed.
+# You can also run it by hand: GitHub -> Actions -> "Update heat map data" -> Run workflow.
+name: Update heat map data
+
+on:
+  schedule:
+    - cron: "32 * * * *"   # every hour, at minute 32 (UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    # only run in the repo that hosts the page on GitHub Pages
+    if: github.repository == 'snnahvi/cisaad-portal'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download the sheet
+        env:
+          SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR_Oj75-gKhy5KRe63sGD-H3QOFX_79uCLgBV8HAph9rSHDsGtLY998jiI899SF9Hmed00hxC51gRF8/pub?gid=169388297&single=true&output=csv"
+        run: |
+          curl -sSL --fail "$SHEET_CSV_URL" -o /tmp/laws.csv
+          # safety check: only replace the snapshot if the download looks like the laws sheet
+          header=$(head -n 1 /tmp/laws.csv)
+          echo "$header" | grep -qw "State" && echo "$header" | grep -qw "Bill" || { echo "Unexpected header: $header"; exit 1; }
+          cp /tmp/laws.csv pages/us-policies-laws/heatmap/heatmap-data.csv
+
+      - name: Save if changed
+        run: |
+          if git diff --quiet -- pages/us-policies-laws/heatmap/heatmap-data.csv; then
+            echo "No changes in the sheet."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add pages/us-policies-laws/heatmap/heatmap-data.csv
+            git commit -m "Update heat map data from Google Sheet"
+            git push
+          fi

@@ -30,7 +30,7 @@ It appears on the CISAAD **US Policies & Laws** page.
 | File | What it is |
 |---|---|
 | `index.html` | The page: map, buttons, and the "How to read a bill" guide |
-| `heatmap-data.csv` | The dataset, one row per law |
+| `heatmap-data.csv` | Hourly copy of the Google Sheet (one row per law), for fast loading |
 | `plotly.min.js` | Map library (stored here so the page doesn't depend on outside servers) |
 | `usa_110m.json` | US state shapes used by the map |
 | `README.md` | This file |
@@ -52,6 +52,10 @@ Each row is **one enacted law**. Rows are grouped by state, newest first.
 | `Date Enacted` | `2025-05-20` | Date it became law |
 | `Deepfake` | `No` | `Yes` if it is also a deepfake law |
 | `Notes` | | Anything that still needs checking |
+| `Title` | | Short plain-language title of the law (optional) |
+| `Summary` | | What the law does; states with summaries can be clicked on the map |
+| `Link` | | Link to the bill text |
+| `Topic` | `Health` | Health, Education, Government, Crime, Consumers or Elections |
 
 ### Reading a bill code
 
@@ -76,17 +80,13 @@ MD   H   820
 
 ## How to update the data
 
-1. Edit `heatmap-data.csv` (Excel or Google Sheets work fine; save as **CSV, UTF-8**).
-2. Add one row per new law. Keep the `Bill` format `ST X 123`.
-3. Commit and push to **both** remotes:
-   ```
-   git add pages/us-policies-laws/heatmap
-   git commit -m "Update heat map data"
-   git push cisaad main
-   git push origin main
-   ```
+The map reads the published Google Sheet (tab **Laws**). Add or edit a law there, one row per law.
 
-> The map in `index.html` currently has the data built in. Connecting it to read this CSV directly is the next step.
+- `heatmap-data.csv` is a copy of that sheet, refreshed **every hour** by the GitHub workflow
+  `.github/workflows/update-heatmap.yml`. The page shows this copy right away, then checks the
+  live sheet and redraws if anything changed.
+- To refresh the copy right away: GitHub → **Actions** → **Update heat map data** → **Run workflow**.
+- Don't edit `heatmap-data.csv` by hand; the next run would overwrite it.
 
 ---
 

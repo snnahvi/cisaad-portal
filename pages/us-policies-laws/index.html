@@ -348,32 +348,57 @@
          return `<div class="card">${tags ? `<div class="tags">${tags}</div>` : ""}<span class="tt">${esc(r.Title)}</span>` +
             (r.Source ? `<p class="meta"><i>${esc(r.Source)}</i></p>` : "") + (r.Summary ? `<p class="sum">${esc(r.Summary)}</p>` : "") +
             (r.Link ? `<a class="btn" href="${esc(r.Link)}" target="_blank" rel="noopener">Read more →</a>` : "") + `</div>`;
-      } Promise.all(["sections.csv", "resources.csv"].map(u => fetch(u, { cache: "no-store" }).then(x => { if (!x.ok) throw u; return x.text() })))
-         .then(([s, r]) => {
-            const secs = parseCSV(s).filter(x => yes(x.Show)).sort((a, b) => (+a.Order || 99) - (+b.Order || 99));
-            const res = parseCSV(r).filter(x => yes(x.Show));
-            let chips = `<a href="https://cisaad.umbc.edu/wp-content/uploads/sites/762/2024/12/Deepfake-Legislation-Policies-2.svg" target="_blank" rel="noopener">Policies Summary ↗</a>`, html = "";
-            secs.forEach(sec => {
-               const id = slug(sec.Section), items = res.filter(x => x.Section === sec.Section).sort((a, b) => (+a.Order || 99) - (+b.Order || 99));
-               const isMap = sec.Section === "Heat Maps", n = isMap ? "" : items.length;
-               if (!isMap && !items.length && !sec.Intro) return;
-               chips += `<a href="#${id}">${esc(SHORT[sec.Section] || sec.Section)}${n !== "" ? ` <small>${n}</small>` : ""}</a>`;
-               const head = sec["Heading Link"] ? `<a href="${esc(sec["Heading Link"])}" target="_blank" rel="noopener">${esc(sec.Heading || sec.Section)}</a>` : esc(sec.Heading || sec.Section); html += `<section id="${id}"><h2>${head}${n !== "" ? ` <small>(${n})</small>` : ""}</h2>` +
-                  (sec.Intro && !isMap ? `<p class="intro">${esc(sec.Intro)}</p>` : "") +
-                  (isMap ? `<iframe class="map" src="${MAP_URL}" title="US AI and deepfake legislation heat maps"></iframe>` : `<div class="grid">${items.map(card).join("")}</div>`) +
-                  `<a class="totop" href="#page">↑ Back to top</a></section>`;
-            });
-            document.getElementById("chips").innerHTML = chips;
-            document.getElementById("content").innerHTML = html;
-            /* The map page is on the same site, so its frame can be sized to fit its content (no inner scrollbar). */
-            const mf = document.querySelector("iframe.map");
-            if (mf) mf.addEventListener("load", () => {
-               try {
-                  const d = mf.contentDocument, fit = () => { mf.style.height = Math.ceil(d.body.getBoundingClientRect().height) + "px"; };
-                  fit(); new ResizeObserver(fit).observe(d.body);
-               } catch (e) { }
-            });
-         }).catch(() => { document.getElementById("content").innerHTML = '<p class="err">Could not load the data. Please try again later.</p>'; });
+      }
+      /* Two places to read the data from:
+         1) fast: sections.csv + resources.csv next to this page (copied from the sheet every hour)
+         2) fresh: the live Google Sheet tabs ("Publish to web" CSV links) */
+      const SNAPSHOT = ["sections.csv", "resources.csv"];
+      const LIVE = [
+         "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2suSZ1M0V5ZMXRGAGfeJ0ZSsolg9AOVT8mW8821HnAH1PdCytsKkPYhbazZzhM6h1H67cRsOt9EL-/pub?gid=355640421&single=true&output=csv",
+         "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2suSZ1M0V5ZMXRGAGfeJ0ZSsolg9AOVT8mW8821HnAH1PdCytsKkPYhbazZzhM6h1H67cRsOt9EL-/pub?gid=1692809070&single=true&output=csv"
+      ];
+      /* downloads both tabs and sorts them out by their header row */
+      async function getBoth(urls) {
+         const texts = await Promise.all(urls.map(u => fetch(u, { cache: "no-cache" }).then(x => { if (!x.ok) throw u; return x.text() })));
+         const head = t => t.replace(/^\uFEFF/, "").split(/\r?\n/, 1)[0];
+         const s = texts.find(t => /^Section,Order,Heading/.test(head(t))), r = texts.find(t => /^Section,Order,Source,Title/.test(head(t)));
+         if (!s || !r) throw new Error("unexpected CSV");
+         return [s, r];
+      }
+      /* draws the page, but only if the data is different from what is already shown */
+      let shownText = null;
+      function show([s, r]) {
+         if (s + "\u0000" + r === shownText) return;
+         shownText = s + "\u0000" + r;
+         const secs = parseCSV(s).filter(x => yes(x.Show)).sort((a, b) => (+a.Order || 99) - (+b.Order || 99));
+         const res = parseCSV(r).filter(x => yes(x.Show));
+         let chips = `<a href="https://cisaad.umbc.edu/wp-content/uploads/sites/762/2024/12/Deepfake-Legislation-Policies-2.svg" target="_blank" rel="noopener">Policies Summary ↗</a>`, html = "";
+         secs.forEach(sec => {
+            const id = slug(sec.Section), items = res.filter(x => x.Section === sec.Section).sort((a, b) => (+a.Order || 99) - (+b.Order || 99));
+            const isMap = sec.Section === "Heat Maps", n = isMap ? "" : items.length;
+            if (!isMap && !items.length && !sec.Intro) return;
+            chips += `<a href="#${id}">${esc(SHORT[sec.Section] || sec.Section)}${n !== "" ? ` <small>${n}</small>` : ""}</a>`;
+            const head = sec["Heading Link"] ? `<a href="${esc(sec["Heading Link"])}" target="_blank" rel="noopener">${esc(sec.Heading || sec.Section)}</a>` : esc(sec.Heading || sec.Section); html += `<section id="${id}"><h2>${head}${n !== "" ? ` <small>(${n})</small>` : ""}</h2>` +
+               (sec.Intro && !isMap ? `<p class="intro">${esc(sec.Intro)}</p>` : "") +
+               (isMap ? `<iframe class="map" src="${MAP_URL}" title="US AI and deepfake legislation heat maps"></iframe>` : `<div class="grid">${items.map(card).join("")}</div>`) +
+               `<a class="totop" href="#page">↑ Back to top</a></section>`;
+         });
+         document.getElementById("chips").innerHTML = chips;
+         document.getElementById("content").innerHTML = html;
+         /* The map page is on the same site, so its frame can be sized to fit its content (no inner scrollbar). */
+         const mf = document.querySelector("iframe.map");
+         if (mf) mf.addEventListener("load", () => {
+            try {
+               const d = mf.contentDocument, fit = () => { mf.style.height = Math.ceil(d.body.getBoundingClientRect().height) + "px"; };
+               fit(); new ResizeObserver(fit).observe(d.body);
+            } catch (e) { }
+         });
+      }
+      (async function load() {
+         try { show(await getBoth(SNAPSHOT)); } catch (e) { }
+         try { show(await getBoth(LIVE)); }
+         catch (e) { if (shownText === null) document.getElementById("content").innerHTML = '<p class="err">Could not load the data. Please try again later.</p>'; }
+      })();
       /* Jump links: the page sits in a tall iframe on WordPress, so normal #links cannot scroll
          the WordPress page. scrollIntoView() does, so chips and "Back to top" use it. */
       document.addEventListener("click", e => {

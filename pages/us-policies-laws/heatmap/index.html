@@ -568,17 +568,28 @@
       });
     }
     let BILLS = {}, CLICKABLE = [], ready = false;
-    const CACHE = "heatmapLawsCSV";
-    function show(text) { BILLS = toBills(parseCSV(text)); fillMap(BILLS); start(); }
-    /* 1) Show the last saved copy right away (repeat visits open instantly). */
-    let cached = null;
-    try { cached = localStorage.getItem(CACHE); if (cached) show(cached); } catch (e) { cached = null; }
-    /* 2) Always get the latest data from the Google Sheet; redraw only if it changed. */
-    fetch(SHEET_CSV).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-      .then(text => {
-        if (text !== cached) { show(text); try { localStorage.setItem(CACHE, text); } catch (e) { } }
-      })
-      .catch(() => { if (!ready) document.getElementById("map").innerHTML = '<p class="empty">The map data could not be loaded. Please refresh the page.</p>'; });
+    /* Fast copy of the sheet, saved next to this page every hour by the GitHub workflow
+       (.github/workflows/update-heatmap.yml). */
+    const SNAPSHOT_CSV = "heatmap-data.csv";
+    /* downloads a CSV and checks it really is the laws sheet */
+    async function getText(url) {
+      const r = await fetch(url, { cache: "no-cache" });
+      if (!r.ok) throw new Error(r.status);
+      const text = await r.text();
+      const head = text.split(/\r?\n/, 1)[0];
+      if (!/\bState\b/.test(head) || !/\bBill\b/.test(head)) throw new Error("unexpected CSV");
+      return text;
+    }
+    /* draws the map, but only if the data is different from what is already shown */
+    let shownText = null;
+    function show(text) { if (text === shownText) return; shownText = text; BILLS = toBills(parseCSV(text)); fillMap(BILLS); start(); }
+    (async function load() {
+      /* 1) fast: the saved copy next to this page */
+      try { show(await getText(SNAPSHOT_CSV)); } catch (e) { }
+      /* 2) fresh: the live Google Sheet (redraws only if something changed) */
+      try { show(await getText(SHEET_CSV)); }
+      catch (e) { if (!ready) $("map").innerHTML = '<p class="empty">The map data could not be loaded. Please refresh the page.</p>'; }
+    })();
     function start() {
     /* Henry's map colors and color scales are unchanged; colorbar moved under the map so it fits the column. */
     f.data.forEach(function (t) {
@@ -596,7 +607,7 @@
     CLICKABLE = Object.keys(BILLS).filter(st => BILLS[st].some(b => b.s));
     f.data.forEach(t => { t.customdata = t.customdata.map((c, i) => CLICKABLE.includes(t.locations[i]) ? c + "<br><i>Click for details</i>" : c); });
     if (!ready) $("map").innerHTML = "";
-    Plotly.newPlot("map", f.data, f.layout, { topojsonURL: "./", responsive: true, displayModeBar: false, scrollZoom: false });
+    (ready ? Plotly.react : Plotly.newPlot)("map", f.data, f.layout, { topojsonURL: "./", responsive: true, displayModeBar: false, scrollZoom: false });
     pick(document.querySelector('.tabs button[aria-pressed="true"]').dataset.k);
     if (!ready) {
       document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
@@ -632,4 +643,4 @@
   </script>
 </body>
 
-</html>
+</html>
