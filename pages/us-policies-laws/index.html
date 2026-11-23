@@ -317,6 +317,7 @@
          <p class="err">Loading…</p>
       </main>
    </div>
+   <script src="../../assets/sheet.js"></script>
    <script>
       /* Data comes from the Google Sheet (tabs Resources + Sections), copied into
          resources.csv and sections.csv by the GitHub workflow. Only rows with Show = TRUE appear. */
@@ -327,20 +328,7 @@
          "Agency Programs": "Agency Programs", "Opinion Pieces to Policymakers": "Opinion Pieces"
       };
       const MAP_URL = "heatmap/";
-      function parseCSV(t) {
-         const rows = []; let r = [], f = "", q = false;
-         for (let i = 0; i < t.length; i++) {
-            const c = t[i];
-            if (q) { if (c == '"') { if (t[i + 1] == '"') { f += '"'; i++ } else q = false } else f += c }
-            else if (c == '"') q = true; else if (c == ',') { r.push(f); f = "" }
-            else if (c == '\n' || c == '\r') { if (c == '\r' && t[i + 1] == '\n') i++; r.push(f); rows.push(r); r = []; f = "" } else f += c
-         }
-         if (f !== "" || r.length) { r.push(f); rows.push(r) }
-         const h = rows.shift().map(s => s.trim());
-         return rows.filter(x => x.some(v => v.trim())).map(x => Object.fromEntries(h.map((k, i) => [k, (x[i] || "").trim()])));
-      }
       const yes = v => /^(true|yes|1|✓)$/i.test(v);
-      const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
       const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       function status(s) { if (!s) return ""; const c = /law/i.test(s) ? "law" : /congress/i.test(s) ? "cong" : "np"; return `<span class="st ${c}">${esc(s)}</span>`; }
       function card(r) {
@@ -357,19 +345,8 @@
          "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2suSZ1M0V5ZMXRGAGfeJ0ZSsolg9AOVT8mW8821HnAH1PdCytsKkPYhbazZzhM6h1H67cRsOt9EL-/pub?gid=355640421&single=true&output=csv",
          "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2suSZ1M0V5ZMXRGAGfeJ0ZSsolg9AOVT8mW8821HnAH1PdCytsKkPYhbazZzhM6h1H67cRsOt9EL-/pub?gid=1692809070&single=true&output=csv"
       ];
-      /* downloads both tabs and sorts them out by their header row */
-      async function getBoth(urls) {
-         const texts = await Promise.all(urls.map(u => fetch(u, { cache: "no-cache" }).then(x => { if (!x.ok) throw u; return x.text() })));
-         const head = t => t.replace(/^\uFEFF/, "").split(/\r?\n/, 1)[0];
-         const s = texts.find(t => /^Section,Order,Heading/.test(head(t))), r = texts.find(t => /^Section,Order,Source,Title/.test(head(t)));
-         if (!s || !r) throw new Error("unexpected CSV");
-         return [s, r];
-      }
-      /* draws the page, but only if the data is different from what is already shown */
-      let shownText = null;
+      /* draws the page from the two tabs: s = Sections, r = Resources */
       function show([s, r]) {
-         if (s + "\u0000" + r === shownText) return;
-         shownText = s + "\u0000" + r;
          const secs = parseCSV(s).filter(x => yes(x.Show)).sort((a, b) => (+a.Order || 99) - (+b.Order || 99));
          const res = parseCSV(r).filter(x => yes(x.Show));
          let chips = `<a href="https://cisaad.umbc.edu/wp-content/uploads/sites/762/2024/12/Deepfake-Legislation-Policies-2.svg" target="_blank" rel="noopener">Policies Summary ↗</a>`, html = "";
@@ -394,11 +371,18 @@
             } catch (e) { }
          });
       }
-      (async function load() {
-         try { show(await getBoth(SNAPSHOT)); } catch (e) { }
-         try { show(await getBoth(LIVE)); }
-         catch (e) { if (shownText === null) document.getElementById("content").innerHTML = '<p class="err">Could not load the data. Please try again later.</p>'; }
-      })();
+      /* 1) the saved copies next to this page, 2) the live Google Sheet (see assets/sheet.js) */
+      loadSheets({
+         snapshot: SNAPSHOT, live: LIVE,
+         /* the two tabs can arrive in any order: tell them apart by their header row */
+         check: texts => {
+            const s = texts.find(t => /^Section,Order,Heading/.test(headerOf(t))), r = texts.find(t => /^Section,Order,Source,Title/.test(headerOf(t)));
+            if (!s || !r) throw new Error("unexpected CSV");
+            return [s, r];
+         },
+         show: show,
+         fail: () => { document.getElementById("content").innerHTML = '<p class="err">Could not load the data. Please try again later.</p>'; }
+      });
       /* Jump links: the page sits in a tall iframe on WordPress, so normal #links cannot scroll
          the WordPress page. scrollIntoView() does, so chips and "Back to top" use it. */
       document.addEventListener("click", e => {

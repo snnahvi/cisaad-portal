@@ -362,6 +362,7 @@
     </div>
   </div>
 
+  <script src="../../assets/sheet.js"></script>
   <script>
     /* ============ SETTINGS ============
        SHEET_CSV_URL: "Publish to web" CSV link of the publications tab (live data).
@@ -371,28 +372,7 @@
     const SNAPSHOT_CSV = "publications.csv";
     /* ================================== */
 
-    function parseCSV(text) {
-      const rows = []; let row = [], f = "", q = false;
-      for (let i = 0; i < text.length; i++) {
-        const c = text[i];
-        if (q) {
-          if (c == '"') { if (text[i + 1] == '"') { f += '"'; i++; } else q = false; }
-          else f += c;
-        } else if (c == '"') q = true;
-        else if (c == ',') { row.push(f); f = ""; }
-        else if (c == '\n' || c == '\r') {
-          if (c == '\r' && text[i + 1] == '\n') i++;
-          row.push(f); rows.push(row); row = []; f = "";
-        } else f += c;
-      }
-      if (f !== "" || row.length) { row.push(f); rows.push(row); }
-      const head = rows.shift().map(h => h.trim());
-      return rows.filter(r => r.some(v => v.trim() !== ""))
-        .map(r => Object.fromEntries(head.map((h, i) => [h, (r[i] || "").trim()])));
-    }
-
     const isShown = v => /^(true|yes|y|1|x|✓|show)$/i.test(String(v || "").trim());
-    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const urlsIn = s => (String(s || "").match(/https?:\/\/[^\s,]+/g) || []);
 
     // Order of the sections on the page (conferences first)
@@ -599,33 +579,15 @@
         }));
     }
 
-    // downloads a CSV and checks it really is the publications sheet
-    async function getText(url) {
-      const res = await fetch(url, { cache: "no-cache" });
-      if (!res.ok) throw new Error(res.status);
-      const text = await res.text();
-      if (!/^\uFEFF?Papers\s*,/.test(text)) throw new Error("unexpected CSV");
-      return text;
-    }
-
-    // draws the list, but only if the data is different from what is already shown
-    let shownText = null;
-    function show(text) {
-      if (text === shownText) return;
-      shownText = text; ALL = toItems(parseCSV(text)); render();
-    }
-
-    async function load() {
-      // 1) fast: the saved copy next to this page
-      try { show(await getText(SNAPSHOT_CSV)); } catch (e) { }
-      // 2) fresh: the live Google Sheet (redraws only if something changed)
-      try { show(await getText(SHEET_CSV_URL)); }
-      catch (e) {
-        if (shownText === null)
-          document.getElementById('list').innerHTML = '<p class="status">Could not load the publications list. Please try again later.</p>';
-      }
-    }
-    load();
+    // 1) the saved copy next to this page, 2) the live Google Sheet (see assets/sheet.js)
+    loadSheets({
+      snapshot: [SNAPSHOT_CSV],
+      live: [SHEET_CSV_URL],
+      // only accept the download if it really is the publications sheet
+      check: ([text]) => { if (!/^Papers\s*,/.test(headerOf(text))) throw new Error("unexpected CSV"); return text; },
+      show: text => { ALL = toItems(parseCSV(text)); render(); },
+      fail: () => { document.getElementById('list').innerHTML = '<p class="status">Could not load the publications list. Please try again later.</p>'; }
+    });
   </script>
 </body>
 
