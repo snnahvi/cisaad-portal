@@ -9,22 +9,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"
     media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="../../assets/umbc.css">
   <style>
     /* UMBC brand (styleguide.umbc.edu): Inter; primary Black + Gold;
      secondary AOK Teal (links), Dark Gray (muted text), Light Gray (lines) as accents only.
      Gold is never used as text on white, and white text is never put on gold. */
-    :root {
-      --text: #000;
-      --muted: #636466;
-      --rule: #636466;
-      --link: #007176;
-      --bg: #fff;
-      --gold: #fdb515;
-      --gold-tint: #fee9b3;
-      --line: #c7c8ca;
-      --soft: #f4f4f5
-    }
-
     * {
       box-sizing: border-box
     }
@@ -32,11 +21,11 @@
     html,
     body {
       margin: 0;
-      background: var(--bg)
+      background: var(--white)
     }
 
     body {
-      color: var(--text);
+      color: var(--black);
       font: 16px/1.6 "Inter var", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif
     }
 
@@ -45,7 +34,7 @@
     }
 
     a {
-      color: var(--link);
+      color: var(--teal);
       text-decoration: underline
     }
 
@@ -55,7 +44,7 @@
 
     hr {
       border: 0;
-      border-top: 1px solid var(--rule);
+      border-top: 1px solid var(--dgray);
       margin: 8px 0
     }
 
@@ -77,10 +66,10 @@
       font-weight: 600;
       line-height: 1.2;
       padding: 7px 14px;
-      border: 1px solid var(--line);
+      border: 1px solid var(--lgray);
       border-radius: 999px;
       background: #fff;
-      color: var(--text);
+      color: var(--black);
       cursor: pointer;
       transition: background .15s, border-color .15s
     }
@@ -99,7 +88,7 @@
     .chip .n {
       font-size: 12px;
       font-weight: 400;
-      color: var(--muted);
+      color: var(--dgray);
       margin-left: 4px
     }
 
@@ -120,10 +109,10 @@
       font: inherit;
       font-size: 14px;
       padding: 7px 10px;
-      border: 1px solid var(--line);
+      border: 1px solid var(--lgray);
       border-radius: 6px;
       background: #fff;
-      color: var(--text)
+      color: var(--black)
     }
 
     .tools input {
@@ -134,7 +123,7 @@
     .tools select:focus,
     .tools input:focus,
     .chip:focus-visible {
-      outline: 2px solid var(--link);
+      outline: 2px solid var(--teal);
       outline-offset: 2px
     }
 
@@ -151,7 +140,7 @@
       position: sticky;
       top: 0;
       z-index: 5;
-      background: var(--bg)
+      background: var(--white)
     }
 
     #nav hr:last-child {
@@ -195,7 +184,7 @@
 
     .count {
       text-align: center;
-      color: var(--muted);
+      color: var(--dgray);
       font-size: 14px;
       margin: 4px 0 8px
     }
@@ -222,7 +211,7 @@
     }
 
     .card {
-      border: 1px solid var(--line);
+      border: 1px solid var(--lgray);
       border-left: 4px solid var(--gold);
       border-radius: 8px;
       padding: 14px 16px;
@@ -263,13 +252,13 @@
       font-size: 17px;
       font-weight: 600;
       line-height: 1.4;
-      color: var(--text);
+      color: var(--black);
       margin: 0 0 4px
     }
 
     .pub-meta {
       font-size: 14px;
-      color: var(--muted);
+      color: var(--dgray);
       line-height: 1.5
     }
 
@@ -290,15 +279,15 @@
       line-height: 1;
       padding: 7px 12px;
       border-radius: 6px;
-      border: 1px solid var(--link);
-      color: var(--link);
+      border: 1px solid var(--teal);
+      color: var(--teal);
       background: #fff;
       text-decoration: none;
       cursor: pointer
     }
 
     .btn:hover {
-      background: var(--link);
+      background: var(--teal);
       color: #fff;
       text-decoration: none
     }
@@ -312,12 +301,12 @@
     h3 .n {
       font-size: 15px;
       font-weight: 400;
-      color: var(--muted);
+      color: var(--dgray);
       margin-left: 6px
     }
 
     .status {
-      color: var(--muted);
+      color: var(--dgray);
       padding: 16px 0
     }
 
@@ -344,11 +333,11 @@
       width: max-content;
       margin: 6px 0 0 auto;
       font-size: 13px;
-      color: var(--muted)
+      color: var(--dgray)
     }
 
     .totop:hover {
-      color: var(--link)
+      color: var(--teal)
     }
   </style>
 </head>

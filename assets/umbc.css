@@ -1,0 +1,14 @@
+/* UMBC brand colors (styleguide.umbc.edu), shared by all CISAAD pages.
+   Each page loads this file with a <link> tag before its own <style>.
+   Change a color here and it changes on every page. */
+:root {
+  --black: #000;
+  --white: #fff;
+  --gold: #fdb515;      /* UMBC gold */
+  --gold-tint: #fee9b3; /* light gold, for highlights */
+  --red: #da2128;
+  --teal: #007176;      /* links and buttons */
+  --dgray: #636466;     /* secondary text */
+  --lgray: #c7c8ca;     /* borders and lines */
+  --soft: #f4f4f5       /* light gray backgrounds */
+}
